@@ -85,61 +85,110 @@ export default function AdminUsersPage() {
 
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 className="h2">Kullanıcı Yönetimi</h1>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 className="h2 mb-2 mb-md-0">Kullanıcı Yönetimi</h1>
+        <button className="btn btn-primary w-100 w-md-auto" onClick={() => setShowModal(true)}>
           <i className="bi bi-plus-lg me-2"></i>Yeni Kullanıcı Ekle
         </button>
       </div>
 
-      <div className="table-responsive">
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>İsim</th>
-              <th>Email</th>
-              <th>Telefon</th>
-              <th>Rol</th>
-              <th>İşlemler</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>{user.phone || 'Belirtilmemiş'}</td>
-                <td>
-                  <select
-                    className="form-select form-select-sm w-auto"
-                    value={user.role}
-                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                    disabled={user.role === 'admin'}
-                  >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </td>
-                <td>
-                  <button
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={() => handleDelete(user.id)}
-                    disabled={user.role === 'admin'}
-                  >
-                    Sil
-                  </button>
-                </td>
+      {/* Masaüstü Görünümü */}
+      <div className="d-none d-md-block">
+        <div className="table-responsive">
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>İsim</th>
+                <th>Email</th>
+                <th>Telefon</th>
+                <th>Rol</th>
+                <th>İşlemler</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.id}</td>
+                  <td>{user.name}</td>
+                  <td>{user.email}</td>
+                  <td>{user.phone || 'Belirtilmemiş'}</td>
+                  <td>
+                    <select
+                      className="form-select form-select-sm w-auto"
+                      value={user.role}
+                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                      disabled={user.role === 'admin'}
+                    >
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </td>
+                  <td>
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => handleDelete(user.id)}
+                      disabled={user.role === 'admin'}
+                    >
+                      Sil
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
+      {/* Mobil Görünümü */}
+      <div className="d-md-none">
+        <div className="row g-3">
+          {users.map((user) => (
+            <div key={user.id} className="col-12">
+              <div className="card">
+                <div className="card-body">
+                  <h5 className="card-title d-flex justify-content-between">
+                    {user.name}
+                    <span className="badge bg-secondary">ID: {user.id}</span>
+                  </h5>
+                  <div className="mb-2">
+                    <i className="bi bi-envelope me-2"></i>
+                    {user.email}
+                  </div>
+                  <div className="mb-2">
+                    <i className="bi bi-telephone me-2"></i>
+                    {user.phone || 'Belirtilmemiş'}
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center mt-3">
+                    <select
+                      className="form-select form-select-sm w-50"
+                      value={user.role}
+                      onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                      disabled={user.role === 'admin'}
+                    >
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => handleDelete(user.id)}
+                      disabled={user.role === 'admin'}
+                    >
+                      <i className="bi bi-trash me-1"></i>
+                      Sil
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Modal */}
       {showModal && (
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog">
+          <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <form onSubmit={handleCreateUser}>
                 <div className="modal-header">

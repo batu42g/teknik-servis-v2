@@ -7,22 +7,40 @@ export default function MainSlider({ slides }) {
   useEffect(() => {
     // Bootstrap'in yüklü olduğundan emin ol
     if (typeof window !== 'undefined') {
-      // Bootstrap carousel'ı başlat
-      const carousel = document.getElementById('main-slider');
-      if (carousel) {
-        new bootstrap.Carousel(carousel, {
-          interval: 3000, // 3 saniyede bir geçiş yap
-          wrap: true // Sondan başa dön
-        });
-      }
+      const loadBootstrap = async () => {
+        try {
+          // Bootstrap'i dinamik olarak yükle
+          await import('bootstrap/dist/js/bootstrap.bundle.min.js');
+          
+          // Carousel'ı başlat
+          const carousel = document.getElementById('main-slider');
+          if (carousel) {
+            console.log('Carousel elementi bulundu, başlatılıyor...');
+            new window.bootstrap.Carousel(carousel, {
+              interval: 3000,
+              wrap: true
+            });
+          } else {
+            console.error('Carousel elementi bulunamadı!');
+          }
+        } catch (error) {
+          console.error('Bootstrap yüklenirken hata:', error);
+        }
+      };
+
+      loadBootstrap();
     }
   }, []);
   
   const handleImageError = (e) => {
+    console.log('Resim yükleme hatası, yedek resim kullanılıyor');
     e.currentTarget.src = 'https://placehold.co/1200x500.png?text=Gorsel+Bulunamadi';
   };
 
+  console.log('MainSlider render ediliyor, slides:', slides);
+
   if (!slides || slides.length === 0) {
+    console.log('Slides verisi boş, null döndürülüyor');
     return null;
   }
 

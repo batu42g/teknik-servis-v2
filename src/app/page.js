@@ -3,20 +3,32 @@ import MainSlider from '../components/MainSlider';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getSlides() {
-    return prisma.slider.findMany({
-        orderBy: { order: 'asc' },
-    });
+    try {
+        const slides = await prisma.slider.findMany({
+            orderBy: { order: 'asc' },
+        });
+        console.log('Veritabanından gelen slides:', slides);
+        return slides;
+    } catch (error) {
+        console.error('Slider verileri alınırken hata:', error);
+        return [];
+    }
 }
 
 export default async function Home() {
     const slides = await getSlides();
-    console.log('Ana Sayfa Slides:', slides); // Debug için eklendi
+    console.log('Ana Sayfa Slides:', slides);
 
     return (
         <div>
-            <MainSlider slides={slides} />
+            {slides && slides.length > 0 ? (
+                <MainSlider slides={slides} />
+            ) : (
+                <div>Slider bulunamadı</div>
+            )}
             
             <div className="container my-5 text-center">
                 <h2 className="mb-4">Hizmetlerimiz</h2>

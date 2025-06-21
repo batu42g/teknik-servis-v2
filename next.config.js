@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Bu bölüm, dışarıdan resim çekmemize izin verir
+  experimental: {
+    serverActions: true,
+  },
   images: {
     remotePatterns: [
       {
@@ -16,6 +18,14 @@ const nextConfig = {
       // Başka bir siteden resim eklemek isterseniz,
       // o sitenin resim alan adını buraya ekleyebilirsiniz.
     ],
+    domains: ['images.unsplash.com'],
+  },
+  // Önbellek kontrolü için eklenen ayarlar
+  onDemandEntries: {
+    // Sayfaların bellekte tutulma süresi (ms)
+    maxInactiveAge: 10 * 1000,
+    // Aynı anda bellekte tutulacak sayfa sayısı
+    pagesBufferLength: 2,
   },
 };
 

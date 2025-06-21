@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 function BookAppointmentForm() {
@@ -18,6 +18,25 @@ function BookAppointmentForm() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    // Hizmetleri yükle
+    const fetchServices = async () => {
+      try {
+        const res = await fetch('/api/products');
+        if (!res.ok) throw new Error('Hizmetler yüklenemedi');
+        const data = await res.json();
+        // Sadece 'servis' kategorisindeki ürünleri filtrele
+        const serviceProducts = data.filter(product => product.category === 'servis');
+        setServices(serviceProducts);
+      } catch (err) {
+        console.error('Hizmetler yüklenirken hata:', err);
+      }
+    };
+
+    fetchServices();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -69,9 +88,11 @@ function BookAppointmentForm() {
                   <label htmlFor="serviceType" className="form-label">Servis Tipi</label>
                   <select className="form-select" id="serviceType" value={formData.serviceType} onChange={handleChange} required>
                     <option value="">Seçiniz...</option>
-                    <option value="Kamera Sistemi Kurulum ve Tamiri">Kamera Sistemi Kurulum ve Tamiri</option>
-                    <option value="Bilgisayar Donanım Tamiri">Bilgisayar Donanım Tamiri</option>
-                    <option value="Akıllı Telefon Ekran Değişimi">Akıllı Telefon Ekran Değişimi</option>
+                    {services.map(service => (
+                      <option key={service.id} value={service.name}>
+                        {service.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="mb-3">

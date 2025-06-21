@@ -85,10 +85,15 @@ export default function AdminUsersPage() {
 
   return (
     <>
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 className="h2 mb-2 mb-md-0">Kullanıcı Yönetimi</h1>
-        <button className="btn btn-primary w-100 w-md-auto" onClick={() => setShowModal(true)}>
-          <i className="bi bi-plus-lg me-2"></i>Yeni Kullanıcı Ekle
+      <div className="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 className="h2">Kullanıcı Yönetimi</h1>
+        <button 
+          className="btn btn-primary" 
+          onClick={() => setShowModal(true)}
+          style={{ width: '180px' }}
+        >
+          <i className="bi bi-plus-lg me-2"></i>
+          Yeni Kullanıcı
         </button>
       </div>
 

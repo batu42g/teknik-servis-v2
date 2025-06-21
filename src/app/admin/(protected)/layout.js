@@ -34,10 +34,10 @@ export default function ProtectedAdminLayout({ children }) {
 
         {/* Sidebar */}
         <div
-          className={`col-md-3 col-lg-2 bg-dark sidebar position-fixed h-100 ${
+          className={`col-md-2 col-lg-2 bg-dark sidebar position-fixed h-100 ${
             isSidebarOpen ? 'show d-block' : 'd-none'
           } d-md-block`}
-          style={{ zIndex: 1050 }}
+          style={{ zIndex: 1050, maxWidth: '200px' }}
         >
           <div className="position-sticky pt-3 d-flex flex-column h-100">
             {/* Mobil Kapatma Butonu */}
@@ -51,65 +51,72 @@ export default function ProtectedAdminLayout({ children }) {
             <ul className="nav flex-column">
               <li className="nav-item">
                 <Link 
-                  className="nav-link text-white d-flex align-items-center" 
+                  className="nav-link text-white d-flex align-items-center py-2" 
                   href="/admin"
                   onClick={() => setIsSidebarOpen(false)}
                 >
-                  <i className="bi bi-house-door me-2"></i>Dashboard
+                  <i className="bi bi-house-door me-2"></i>
+                  <span className="text-nowrap">Dashboard</span>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link 
-                  className="nav-link text-white d-flex align-items-center" 
+                  className="nav-link text-white d-flex align-items-center py-2" 
                   href="/admin/users"
                   onClick={() => setIsSidebarOpen(false)}
                 >
-                  <i className="bi bi-people me-2"></i>Kullanıcılar
+                  <i className="bi bi-people me-2"></i>
+                  <span className="text-nowrap">Kullanıcılar</span>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link 
-                  className="nav-link text-white d-flex align-items-center" 
+                  className="nav-link text-white d-flex align-items-center py-2" 
                   href="/admin/orders"
                   onClick={() => setIsSidebarOpen(false)}
                 >
-                  <i className="bi bi-receipt me-2"></i>Siparişler
+                  <i className="bi bi-receipt me-2"></i>
+                  <span className="text-nowrap">Siparişler</span>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link 
-                  className="nav-link text-white d-flex align-items-center" 
+                  className="nav-link text-white d-flex align-items-center py-2" 
                   href="/admin/appointments"
                   onClick={() => setIsSidebarOpen(false)}
                 >
-                  <i className="bi bi-calendar me-2"></i>Randevular
+                  <i className="bi bi-calendar me-2"></i>
+                  <span className="text-nowrap">Randevular</span>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link 
-                  className="nav-link text-white d-flex align-items-center" 
+                  className="nav-link text-white d-flex align-items-center py-2" 
                   href="/admin/contact"
                   onClick={() => setIsSidebarOpen(false)}
                 >
-                  <i className="bi bi-envelope me-2"></i>Mesajlar
+                  <i className="bi bi-envelope me-2"></i>
+                  <span className="text-nowrap">Mesajlar</span>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link 
-                  className="nav-link text-white d-flex align-items-center" 
+                  className="nav-link text-white d-flex align-items-center py-2" 
                   href="/admin/slider"
                   onClick={() => setIsSidebarOpen(false)}
                 >
-                  <i className="bi bi-images me-2"></i>Slider Yönetimi
+                  <i className="bi bi-images me-2"></i>
+                  <span className="text-nowrap">Slider Yönetimi</span>
                 </Link>
               </li>
               <li className="nav-item">
                 <Link 
-                  className="nav-link text-white d-flex align-items-center" 
+                  className="nav-link text-white d-flex align-items-center py-2" 
                   href="/admin/products"
                   onClick={() => setIsSidebarOpen(false)}
                 >
-                  <i className="bi bi-box-seam me-2"></i>Ürün Yönetimi
+                  <i className="bi bi-box-seam me-2"></i>
+                  <span className="text-nowrap">Ürün Yönetimi</span>
                 </Link>
               </li>
             </ul>
@@ -120,7 +127,7 @@ export default function ProtectedAdminLayout({ children }) {
         </div>
 
         {/* Ana İçerik */}
-        <main className="col-12 col-md-9 col-lg-10 ms-auto px-3 px-md-4 py-3">
+        <main className="col-12 col-md-10 col-lg-10 ms-auto px-3 px-md-4 py-3" style={{ marginLeft: '200px' }}>
           <div className="mt-4 mt-md-0">
             {children}
           </div>

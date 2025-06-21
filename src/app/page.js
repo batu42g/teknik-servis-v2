@@ -12,6 +12,7 @@ async function getSlides() {
 
 export default async function Home() {
     const slides = await getSlides();
+    console.log('Ana Sayfa Slides:', slides); // Debug için eklendi
 
     return (
         <div>

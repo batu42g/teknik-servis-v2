@@ -24,19 +24,31 @@ function BookAppointmentForm() {
     // Hizmetleri yükle
     const fetchServices = async () => {
       try {
-        const res = await fetch('/api/products');
+        const res = await fetch('/api/products', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
         if (!res.ok) throw new Error('Hizmetler yüklenemedi');
         const data = await res.json();
         // Sadece 'servis' kategorisindeki ürünleri filtrele
         const serviceProducts = data.filter(product => product.category === 'servis');
+        console.log('Yüklenen servisler:', serviceProducts);
         setServices(serviceProducts);
+        
+        // URL'den gelen service parametresi varsa ve servisler arasında bulunuyorsa seç
+        const urlService = searchParams.get('service');
+        if (urlService && serviceProducts.some(service => service.name === urlService)) {
+          setFormData(prev => ({ ...prev, serviceType: urlService }));
+        }
       } catch (err) {
         console.error('Hizmetler yüklenirken hata:', err);
       }
     };
 
     fetchServices();
-  }, []);
+  }, [searchParams]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });

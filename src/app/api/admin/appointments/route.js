@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request) {
   try {
     const appointments = await prisma.appointment.findMany({
@@ -36,7 +39,11 @@ export async function GET(request) {
       price: priceMap.get(appt.serviceType) || 0, // Eğer fiyat bulunamazsa 0 olarak ayarla.
     }));
 
-    return NextResponse.json(appointmentsWithPrice);
+    const response = NextResponse.json(appointmentsWithPrice);
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    response.headers.set('Pragma', 'no-cache');
+    response.headers.set('Expires', '-1');
+    return response;
   } catch (error) {
     console.error("Admin appointments API error:", error);
     return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });

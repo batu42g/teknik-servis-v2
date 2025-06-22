@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../../../lib/auth';
+import { authOptions } from '../auth/[...nextauth]/route';
 
 const MAX_APPOINTMENTS_PER_SLOT = 2;
 
@@ -16,7 +16,6 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    // Yeni alanları alıyoruz
     const { serviceType, description, date, time, phone, address } = body;
 
     if (!serviceType || !description || !date || !time || !phone || !address) {
@@ -29,7 +28,7 @@ export async function POST(request) {
         date: new Date(date),
         time: time,
         status: {
-          notIn: ['cancelled'] // İptal edilmiş randevuları saymıyoruz
+          notIn: ['CANCELLED'] // İptal edilmiş randevuları saymıyoruz
         }
       }
     });
@@ -49,7 +48,7 @@ export async function POST(request) {
         time,
         phone,
         address,
-        status: 'pending',
+        status: 'PENDING',
       },
     });
 

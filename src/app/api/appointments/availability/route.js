@@ -17,7 +17,7 @@ export async function GET(request) {
       where: {
         date: new Date(date),
         status: {
-          notIn: ['cancelled'] // İptal edilmiş randevuları saymıyoruz
+          notIn: ['CANCELLED'] // İptal edilmiş randevuları saymıyoruz
         }
       },
       select: {

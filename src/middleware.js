@@ -29,7 +29,7 @@ export default withAuth(
         const { pathname } = req.nextUrl;
 
         // Profile sayfası için yetkilendirme
-        if (pathname.startsWith('/profile')) {
+        if (pathname.startsWith('/profile') || pathname.startsWith('/messages')) {
           return !!token;
         }
 
@@ -45,5 +45,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ['/admin/:path*', '/profile/:path*'],
+  matcher: ['/admin/:path*', '/profile/:path*', '/messages/:path*'],
 };

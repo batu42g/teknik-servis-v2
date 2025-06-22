@@ -3,30 +3,23 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function Navbar() {
   const [cartCount, setCartCount] = useState(0);
-  const [user, setUser] = useState(null);
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     setIsMounted(true);
     
     const handleStorageChange = () => {
       try {
-        const userData = localStorage.getItem('user');
-        if (userData) {
-          setUser(JSON.parse(userData));
-        } else {
-          setUser(null);
-        }
-        
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         setCartCount(cart.length);
       } catch (error) {
-        console.error('Veri okunurken hata:', error);
-        setUser(null);
+        console.error('Sepet verisi okunurken hata:', error);
         setCartCount(0);
       }
     };
@@ -35,33 +28,18 @@ export default function Navbar() {
     handleStorageChange();
     window.addEventListener('storage', handleStorageChange);
 
-    // Custom event dinleyicisi ekle
-    const handleAuthChange = () => {
-      handleStorageChange();
-    };
-    window.addEventListener('authChange', handleAuthChange);
-
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('authChange', handleAuthChange);
     };
   }, []);
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        localStorage.removeItem('user');
-        localStorage.removeItem('cart');
-        setUser(null);
-        setCartCount(0);
-        // Custom event tetikle
-        window.dispatchEvent(new Event('authChange'));
-        router.push('/');
-      }
+      await signOut({ redirect: false });
+      localStorage.removeItem('cart');
+      setCartCount(0);
+      router.push('/');
+      router.refresh();
     } catch (error) {
       console.error('Çıkış yapılırken hata oluştu:', error);
     }
@@ -121,7 +99,7 @@ export default function Navbar() {
             </li>
           </ul>
           <ul className="navbar-nav">
-            {user ? (
+            {status === 'authenticated' && session?.user ? (
               <li className="nav-item dropdown">
                 <a
                   className="nav-link dropdown-toggle d-flex align-items-center"
@@ -131,10 +109,10 @@ export default function Navbar() {
                   aria-expanded="false"
                 >
                   <i className="bi bi-person-circle me-1"></i>
-                  {user.name}
+                  {session.user.name}
                 </a>
                 <ul className="dropdown-menu dropdown-menu-end">
-                  {user.role === 'admin' && (
+                  {session.user.role === 'admin' && (
                     <li>
                       <Link className="dropdown-item" href="/admin">
                         <i className="bi bi-speedometer2 me-2"></i>

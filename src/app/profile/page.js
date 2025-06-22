@@ -37,7 +37,7 @@ export default function ProfilePage() {
   const [ratings, setRatings] = useState({});
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (status === 'authenticated' && session?.user) {
       // Profil bilgilerini getir
       const fetchProfile = async () => {
         try {
@@ -49,9 +49,12 @@ export default function ProfilePage() {
             setEmail(userData.email || '');
             setPhone(userData.phone || '');
             setAddress(userData.address || '');
+          } else {
+            router.push('/login');
           }
         } catch (error) {
           console.error('Profil bilgileri alınırken hata:', error);
+          router.push('/login');
         }
       };
 
@@ -77,7 +80,7 @@ export default function ProfilePage() {
       const interval = setInterval(fetchOrders, 30000);
       return () => clearInterval(interval);
     }
-  }, [status]);
+  }, [status, session, router]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -100,10 +103,7 @@ export default function ProfilePage() {
       const data = await response.json();
 
       if (response.ok) {
-        // Kullanıcı bilgilerini localStorage'da güncelle
-        const updatedUser = { ...user, name, email, phone, address };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        setUser(updatedUser);
+        setUser(prevUser => ({ ...prevUser, name, email, phone, address }));
         setMessage({ type: 'success', text: 'Profil bilgileriniz başarıyla güncellendi.' });
         
         // Şifre alanlarını temizle

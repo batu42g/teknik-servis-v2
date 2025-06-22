@@ -1,6 +1,7 @@
- 'use client';
+'use client';
 
 import React, { useState } from 'react';
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -17,22 +18,18 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Giriş işlemi başarısız oldu.');
+      if (result.error) {
+        throw new Error(result.error);
       }
 
-      localStorage.setItem('user', JSON.stringify(data.user));
-      window.dispatchEvent(new Event('authChange'));
-
-      const redirectUrl = data.user?.role === 'admin' ? '/admin' : '/';
-      router.push(redirectUrl);
+      router.push('/profile');
+      router.refresh();
       
     } catch (err) {
       setError(err.message);

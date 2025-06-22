@@ -323,7 +323,7 @@ export default function ProfilePage() {
                      selectedOrder.status === 'cancelled' ? 'İptal Edildi' : selectedOrder.status}
                   </span></p>
                   <p className="mb-1"><strong>Tarih:</strong> {new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
-                  <p className="mb-0"><strong>Toplam Tutar:</strong> {selectedOrder.total.toFixed(2)} TL</p>
+                  <p className="mb-0"><strong>Toplam Tutar:</strong> {selectedOrder.total?.toFixed(2) || '0.00'} TL</p>
                 </div>
                 <h6>Ürünler</h6>
                 <table className="table">
@@ -338,12 +338,12 @@ export default function ProfilePage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {selectedOrder.items.map(item => (
+                    {selectedOrder.items?.map(item => (
                       <tr key={item.id}>
-                        <td>{item.product.name}</td>
-                        <td>{item.quantity}</td>
-                        <td>{item.price.toFixed(2)} TL</td>
-                        <td>{(item.price * item.quantity).toFixed(2)} TL</td>
+                        <td>{item.product?.name || 'Ürün bulunamadı'}</td>
+                        <td>{item.quantity || 0}</td>
+                        <td>{(item.price || 0).toFixed(2)} TL</td>
+                        <td>{((item.price || 0) * (item.quantity || 0)).toFixed(2)} TL</td>
                         <td>
                           {item.rating ? (
                             <span className="text-warning">
@@ -389,7 +389,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label className="form-label">{selectedItem.product.name}</label>
+                    <label className="form-label">{selectedItem.product?.name || 'Ürün bulunamadı'}</label>
                     <select 
                       className="form-select"
                       value={rating}

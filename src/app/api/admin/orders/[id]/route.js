@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../../../lib/prisma';
-import { verifyAuth } from '../../../../../lib/auth';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../../../lib/auth';
 
 export async function PUT(request, { params }) {
   try {
-    const userPayload = await verifyAuth(request);
-    if (!userPayload || userPayload.role !== 'admin') {
+    const session = await getServerSession(authOptions);
+    if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 401 });
     }
 

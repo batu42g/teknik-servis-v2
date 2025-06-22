@@ -266,57 +266,70 @@ export default function ProfilePage() {
         </div>
 
         <div className="col-md-8">
-          <div className="card">
-            <div className="card-body">
-              <h5 className="card-title">Sipariş Geçmişim</h5>
-              {orders.length > 0 ? (
-                <div className="table-responsive">
-                  <table className="table mt-3">
-                    <thead>
-                      <tr>
-                        <th>Sipariş ID</th>
-                        <th>Tarih</th>
-                        <th>Tutar</th>
-                        <th>Durum</th>
-                        <th>Detaylar</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {orders.map(order => (
-                        <tr key={order.id}>
-                          <td>#{order.id}</td>
-                          <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                          <td>{order.total.toFixed(2)} TL</td>
-                          <td>
-                            <span className={`badge bg-${
-                              order.status === 'pending' ? 'warning text-dark' : 
-                              order.status === 'completed' ? 'success' : 
-                              order.status === 'cancelled' ? 'danger' : 'info'
-                            }`}>
-                              {order.status === 'pending' ? 'Bekliyor' :
-                               order.status === 'completed' ? 'Tamamlandı' :
-                               order.status === 'cancelled' ? 'İptal Edildi' : order.status}
-                            </span>
-                          </td>
-                          <td>
-                            <button 
-                              className="btn btn-sm btn-outline-primary"
-                              onClick={() => setSelectedOrder(order)}
-                            >
-                              <i className="bi bi-eye me-1"></i>
-                              Detaylar
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+          <h5 className="mb-4">Siparişlerim</h5>
+          {orders.length === 0 ? (
+            <div className="alert alert-info">Henüz hiç siparişiniz bulunmuyor.</div>
+          ) : (
+            orders.map((order) => (
+              <div key={order.id} className="card mb-3">
+                <div className="card-header d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>Sipariş #{order.id}</strong>
+                    <span className="ms-2 badge bg-secondary">{order.status}</span>
+                  </div>
+                  <small>{new Date(order.createdAt).toLocaleDateString('tr-TR')}</small>
                 </div>
-              ) : (
-                <p className="text-muted mt-3">Henüz sipariş vermediniz.</p>
-              )}
-            </div>
-          </div>
+                <div className="card-body">
+                  <div className="table-responsive">
+                    <table className="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>Ürün</th>
+                          <th>Adet</th>
+                          <th>Fiyat</th>
+                          <th>Toplam</th>
+                          <th>Puan</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {order.items.map((item) => (
+                          <tr key={item.id}>
+                            <td>{item.product.name}</td>
+                            <td>{item.quantity}</td>
+                            <td>{item.price.toFixed(2)} ₺</td>
+                            <td>{(item.quantity * item.price).toFixed(2)} ₺</td>
+                            <td>
+                              {item.rating ? (
+                                <span className="badge bg-success">
+                                  {item.rating} ★
+                                </span>
+                              ) : (
+                                <span className="badge bg-secondary">Puanlanmadı</span>
+                              )}
+                            </td>
+                            <td>
+                              {order.status === 'completed' && !item.rating && (
+                                <button
+                                  className="btn btn-sm btn-outline-primary"
+                                  onClick={() => handleRatingClick(item)}
+                                >
+                                  Puanla
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="mt-2">
+                    <strong>Toplam Tutar:</strong> {order.total.toFixed(2)} ₺
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -411,37 +424,37 @@ export default function ProfilePage() {
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog">
             <div className="modal-content">
-              <form onSubmit={handleRatingSubmit}>
-                <div className="modal-header">
-                  <h5 className="modal-title">Ürünü Puanla</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowRatingModal(false)}></button>
-                </div>
-                <div className="modal-body">
-                  <div className="mb-3">
-                    <label className="form-label">{selectedItem.product?.name || 'Ürün bulunamadı'}</label>
-                    <select 
-                      className="form-select"
-                      value={rating}
-                      onChange={(e) => setRating(e.target.value)}
+              <div className="modal-header">
+                <h5 className="modal-title">Ürün Puanlama</h5>
+                <button type="button" className="btn-close" onClick={() => setShowRatingModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                <p><strong>{selectedItem.product.name}</strong> için puanınız:</p>
+                <div className="rating-buttons d-flex justify-content-center gap-2 mb-3">
+                  {[1, 2, 3, 4, 5].map((value) => (
+                    <button
+                      key={value}
+                      className={`btn ${rating === value.toString() ? 'btn-primary' : 'btn-outline-primary'}`}
+                      onClick={() => setRating(value.toString())}
                     >
-                      <option value="0">Puan Seçin...</option>
-                      <option value="1">1 - Çok Kötü</option>
-                      <option value="2">2 - Kötü</option>
-                      <option value="3">3 - Orta</option>
-                      <option value="4">4 - İyi</option>
-                      <option value="5">5 - Çok İyi</option>
-                    </select>
-                  </div>
+                      {value}
+                    </button>
+                  ))}
                 </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowRatingModal(false)}>
-                    İptal
-                  </button>
-                  <button type="submit" className="btn btn-primary" disabled={rating === '0'}>
-                    Puanı Kaydet
-                  </button>
-                </div>
-              </form>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowRatingModal(false)}>
+                  İptal
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleRatingSubmit}
+                  disabled={rating === '0'}
+                >
+                  Puanla
+                </button>
+              </div>
             </div>
           </div>
         </div>

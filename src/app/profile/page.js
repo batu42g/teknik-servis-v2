@@ -146,24 +146,25 @@ export default function ProfilePage() {
       });
 
       if (response.ok) {
-        // Siparişleri yeniden yükle
+        // Önce modalı kapat ve state'leri temizle
+        setShowRatingModal(false);
+        setSelectedItem(null);
+        setRating('0');
+
+        // Sonra siparişleri yeniden yükle
         const ordersRes = await fetch('/api/profile/orders');
         if (ordersRes.ok) {
           const ordersData = await ordersRes.json();
           setOrders(ordersData);
           
           // Seçili siparişi güncelle
-          const updatedOrder = ordersData.find(o => o.id === selectedOrder.id);
-          if (updatedOrder) {
-            setSelectedOrder(updatedOrder);
+          if (selectedOrder) {
+            const updatedOrder = ordersData.find(o => o.id === selectedOrder.id);
+            if (updatedOrder) {
+              setSelectedOrder(updatedOrder);
+            }
           }
         }
-        // Puanlama modalını kapat
-        setShowRatingModal(false);
-        // Seçili ürünü temizle
-        setSelectedItem(null);
-        // Puanı sıfırla
-        setRating('0');
       }
     } catch (error) {
       console.error('Puanlama sırasında hata:', error);

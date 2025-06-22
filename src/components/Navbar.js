@@ -2,61 +2,59 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
-  const [user, setUser] = useState(null);
   const [cartCount, setCartCount] = useState(0);
-  const [isMounted, setIsMounted] = useState(false);
+  const [user, setUser] = useState(null);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
-    setIsMounted(true);
-    
-    const handleStateChange = () => {
-      try {
-        const storedUser = localStorage.getItem('user');
-        setUser(storedUser ? JSON.parse(storedUser) : null);
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        setCartCount(cart.length);
-      } catch (error) {
-        console.error("Veri okunurken hata:", error);
+    // Sepet sayısını güncelle
+    const updateCartCount = () => {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      setCartCount(cart.length);
+    };
+
+    // Kullanıcı bilgisini güncelle
+    const updateUser = () => {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        setUser(JSON.parse(userData));
+      } else {
         setUser(null);
-        setCartCount(0);
       }
     };
-    
-    window.addEventListener('storage', handleStateChange);
-    window.addEventListener('authChange', handleStateChange);
 
-    handleStateChange();
+    updateCartCount();
+    updateUser();
+
+    window.addEventListener('storage', updateCartCount);
+    window.addEventListener('storage', updateUser);
 
     return () => {
-      window.removeEventListener('storage', handleStateChange);
-      window.removeEventListener('authChange', handleStateChange);
+      window.removeEventListener('storage', updateCartCount);
+      window.removeEventListener('storage', updateUser);
     };
-  }, [pathname]);
+  }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('cart');
-    fetch('/api/auth/logout', { method: 'POST' });
-    window.dispatchEvent(new Event('authChange'));
-    router.push('/');
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('cart');
+        setUser(null);
+        setCartCount(0);
+        router.push('/login');
+      }
+    } catch (error) {
+      console.error('Çıkış yapılırken hata oluştu:', error);
+    }
   };
-
-  if (!isMounted) {
-    return (
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
-        <div className="container">
-          <Link href="/" className="navbar-brand">
-            Efe Bilgisayar ve Güvenlik Sistemleri
-          </Link>
-        </div>
-      </nav>
-    );
-  }
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -100,25 +98,43 @@ export default function Navbar() {
           </ul>
           <ul className="navbar-nav">
             {user ? (
-              <>
-                <li className="nav-item">
-                  <Link href="/profile" className="nav-link">
-                    Profilim
-                  </Link>
-                </li>
-                {user.role === 'admin' && (
-                  <li className="nav-item">
-                    <Link href="/admin" className="nav-link">
-                      Admin Panel
+              <li className="nav-item dropdown">
+                <a
+                  className="nav-link dropdown-toggle"
+                  href="#"
+                  role="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <i className="bi bi-person-circle me-1"></i>
+                  {user.name}
+                </a>
+                <ul className="dropdown-menu dropdown-menu-end">
+                  {user.role === 'admin' && (
+                    <li>
+                      <Link className="dropdown-item" href="/admin">
+                        Admin Paneli
+                      </Link>
+                    </li>
+                  )}
+                  <li>
+                    <Link className="dropdown-item" href="/messages">
+                      Mesajlarım
                     </Link>
                   </li>
-                )}
-                <li className="nav-item">
-                  <Link href="/messages" className="nav-link">
-                    Mesajlar
-                  </Link>
-                </li>
-              </>
+                  <li>
+                    <Link className="dropdown-item" href="/profile">
+                      Profilim
+                    </Link>
+                  </li>
+                  <li><hr className="dropdown-divider" /></li>
+                  <li>
+                    <button onClick={handleLogout} className="dropdown-item">
+                      Çıkış Yap
+                    </button>
+                  </li>
+                </ul>
+              </li>
             ) : (
               <>
                 <li className="nav-item">
@@ -135,6 +151,7 @@ export default function Navbar() {
             )}
             <li className="nav-item">
               <Link href="/cart" className="nav-link">
+                <i className="bi bi-cart me-1"></i>
                 Sepet ({cartCount})
               </Link>
             </li>

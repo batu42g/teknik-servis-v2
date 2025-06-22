@@ -26,8 +26,14 @@ export async function GET(request) {
           select: {
             id: true,
             quantity: true,
+            price: true,
             rating: true,
-            product: { select: { name: true } }
+            product: { 
+              select: { 
+                name: true,
+                price: true 
+              } 
+            }
           }
         }
       },

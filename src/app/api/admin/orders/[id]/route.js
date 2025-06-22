@@ -27,8 +27,14 @@ export async function PUT(request, { params }) {
           select: {
             id: true,
             quantity: true,
+            price: true,
             rating: true,
-            product: { select: { name: true } }
+            product: { 
+              select: { 
+                name: true,
+                price: true 
+              } 
+            }
           }
         }
       }

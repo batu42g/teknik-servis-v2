@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function CartPage() {
   const [cart, setCart] = useState([]);
@@ -9,6 +10,7 @@ export default function CartPage() {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [stockInfo, setStockInfo] = useState({});
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const cartData = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -69,8 +71,7 @@ export default function CartPage() {
   };
 
   const handleCompletePurchase = async () => {
-    const user = localStorage.getItem('user');
-    if (!user) {
+    if (status !== 'authenticated') {
       router.push('/login?redirect=/cart');
       return;
     }
@@ -200,21 +201,11 @@ export default function CartPage() {
           </div>
           <div className="text-end mt-3">
             <button
-              className="btn btn-primary"
+              className="btn btn-primary btn-lg"
               onClick={handleCompletePurchase}
               disabled={loading}
             >
-              {loading ? (
-                <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  İşleniyor...
-                </>
-              ) : (
-                <>
-                  <i className="bi bi-bag-check me-2"></i>
-                  Siparişi Tamamla
-                </>
-              )}
+              {loading ? 'İşleniyor...' : 'Alışverişi Tamamla'}
             </button>
           </div>
         </div>

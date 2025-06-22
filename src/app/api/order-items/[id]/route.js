@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../../lib/prisma'; // DOĞRU YOL
-import { verifyAuth } from '../../../../lib/auth'; // DOĞRU YOL
+import prisma from '../../../../lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../../lib/auth';
 
 export async function PUT(request, { params }) {
-  const userPayload = await verifyAuth(request);
-  if (!userPayload) return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 401 });
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 401 });
 
   try {
     const id = parseInt(params.id);
@@ -13,7 +14,7 @@ export async function PUT(request, { params }) {
     const orderItem = await prisma.orderItem.findFirst({
         where: {
             id: id,
-            order: { userId: userPayload.id }
+            order: { userId: session.user.id }
         }
     });
 

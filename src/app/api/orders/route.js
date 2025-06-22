@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
-import { verifyAuth } from '../../../lib/auth';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../lib/auth';
 
 export async function POST(request) {
   try {
-    const userPayload = await verifyAuth(request);
-    if (!userPayload) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json({ error: 'Bu işlemi yapmak için giriş yapmalısınız.' }, { status: 401 });
     }
 
-    const currentUser = await prisma.user.findUnique({ where: { id: userPayload.id }});
+    const currentUser = await prisma.user.findUnique({ where: { id: session.user.id }});
     if (!currentUser?.phone || !currentUser?.address) {
         return NextResponse.json({ error: 'Lütfen profilinizdeki telefon ve adres bilgilerinizi tamamlayın.' }, { status: 400 });
     }
@@ -49,7 +50,7 @@ export async function POST(request) {
       // Siparişi oluştur
       const newOrder = await tx.order.create({
         data: {
-          userId: userPayload.id,
+          userId: session.user.id,
           total: totalPrice,
           phone: currentUser.phone,
           address: currentUser.address,

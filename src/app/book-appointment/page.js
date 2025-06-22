@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 function BookAppointmentForm() {
@@ -19,9 +19,9 @@ function BookAppointmentForm() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [services, setServices] = useState([]);
+  const [availableSlots, setAvailableSlots] = useState({});
 
   useEffect(() => {
-    // Hizmetleri yükle
     const fetchServices = async () => {
       try {
         const res = await fetch('/api/products', {
@@ -32,12 +32,9 @@ function BookAppointmentForm() {
         });
         if (!res.ok) throw new Error('Hizmetler yüklenemedi');
         const data = await res.json();
-        // Sadece 'servis' kategorisindeki ürünleri filtrele
         const serviceProducts = data.filter(product => product.category === 'servis');
-        console.log('Yüklenen servisler:', serviceProducts);
         setServices(serviceProducts);
         
-        // URL'den gelen service parametresi varsa ve servisler arasında bulunuyorsa seç
         const urlService = searchParams.get('service');
         if (urlService && serviceProducts.some(service => service.name === urlService)) {
           setFormData(prev => ({ ...prev, serviceType: urlService }));
@@ -50,8 +47,27 @@ function BookAppointmentForm() {
     fetchServices();
   }, [searchParams]);
 
+  // Seçilen tarihteki randevuları kontrol et
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (!formData.date) return;
+
+      try {
+        const res = await fetch(`/api/appointments/availability?date=${formData.date}`);
+        const data = await res.json();
+        setAvailableSlots(data);
+      } catch (err) {
+        console.error('Müsaitlik kontrolü yapılırken hata:', err);
+      }
+    };
+
+    checkAvailability();
+  }, [formData.date]);
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+    setError(''); // Her değişiklikte hata mesajını temizle
   };
 
   const handleSubmit = async (e) => {
@@ -85,6 +101,11 @@ function BookAppointmentForm() {
       setLoading(false);
     }
   };
+
+  // Saatleri oluştur
+  const timeSlots = [
+    '09:00', '10:00', '11:00', '12:00', '14:00', '15:00'
+  ];
 
   return (
     <div className="container my-5">
@@ -122,18 +143,33 @@ function BookAppointmentForm() {
                 <div className="row mb-3">
                   <div className="col-md-6">
                     <label htmlFor="date" className="form-label">Randevu Tarihi</label>
-                    <input type="date" className="form-control" id="date" value={formData.date} onChange={handleChange} required />
+                    <input 
+                      type="date" 
+                      className="form-control" 
+                      id="date" 
+                      value={formData.date} 
+                      onChange={handleChange} 
+                      min={new Date().toISOString().split('T')[0]}
+                      required 
+                    />
                   </div>
                   <div className="col-md-6">
                     <label htmlFor="time" className="form-label">Randevu Saati</label>
                     <select className="form-select" id="time" value={formData.time} onChange={handleChange} required>
-                       <option value="">Seçiniz...</option>
-                       <option value="09:00">09:00</option>
-                       <option value="10:00">10:00</option>
-                       <option value="11:00">11:00</option>
-                       <option value="12:00">12:00</option>
-                       <option value="14:00">14:00</option>
-                       <option value="15:00">15:00</option>
+                      <option value="">Seçiniz...</option>
+                      {timeSlots.map(time => {
+                        const slotCount = availableSlots[time] || 0;
+                        const isAvailable = slotCount < 2;
+                        return (
+                          <option 
+                            key={time} 
+                            value={time}
+                            disabled={!isAvailable}
+                          >
+                            {time} {!isAvailable ? '(Dolu)' : ''}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                 </div>
@@ -151,10 +187,4 @@ function BookAppointmentForm() {
   );
 }
 
-export default function BookAppointmentPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <BookAppointmentForm />
-    </Suspense>
-  );
-} 
+export default BookAppointmentForm; 

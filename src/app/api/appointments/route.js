@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 import { verifyAuth } from '../../../lib/auth';
 
+const MAX_APPOINTMENTS_PER_SLOT = 2;
+
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -20,6 +22,23 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Tüm alanlar zorunludur.' }, { status: 400 });
     }
 
+    // Aynı tarih ve saatteki randevu sayısını kontrol et
+    const existingAppointments = await prisma.appointment.count({
+      where: {
+        date: new Date(date),
+        time: time,
+        status: {
+          notIn: ['cancelled'] // İptal edilmiş randevuları saymıyoruz
+        }
+      }
+    });
+
+    if (existingAppointments >= MAX_APPOINTMENTS_PER_SLOT) {
+      return NextResponse.json({ 
+        error: 'Bu saat dilimi için randevu kontenjanı dolu. Lütfen başka bir saat seçiniz.' 
+      }, { status: 400 });
+    }
+
     const newAppointment = await prisma.appointment.create({
       data: {
         userId: userPayload.id,
@@ -35,6 +54,7 @@ export async function POST(request) {
 
     return NextResponse.json(newAppointment, { status: 201 });
   } catch (error) {
+    console.error('Randevu oluşturma hatası:', error);
     return NextResponse.json({ error: 'Randevu oluşturulamadı.' }, { status: 500 });
   }
 }

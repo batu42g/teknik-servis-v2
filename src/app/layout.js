@@ -6,8 +6,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '../lib/auth';
 
 export const metadata = {
-  title: 'Teknoloji Mağazası',
-  description: 'En yeni teknoloji ürünleri uygun fiyatlarla',
+  title: 'Efe Bilgisayar ve Güvenlik Sistemleri',
+  description: 'Bilgisayar tamiri, güvenlik kamerası sistemleri ve teknik servis hizmetleri',
 };
 
 export default async function RootLayout({ children }) {
@@ -24,7 +24,7 @@ export default async function RootLayout({ children }) {
           </main>
           <footer className="bg-dark text-light py-4 mt-auto">
             <div className="container text-center">
-              <p>&copy; 2025 Teknoloji Mağazası. Tüm hakları saklıdır.</p>
+              <p>&copy; 2025 Efe Bilgisayar ve Güvenlik Sistemleri. Tüm hakları saklıdır.</p>
             </div>
           </footer>
         </Providers>

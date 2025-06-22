@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession, SessionProvider } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 
 // Sayfayı dinamik olarak işaretle
 export const dynamic = 'force-dynamic';
 
-function ProfileContent() {
+export default function ProfilePage() {
   const router = useRouter();
   const { data: session, status } = useSession({
     required: true,
@@ -447,13 +447,5 @@ function ProfileContent() {
         </div>
       )}
     </div>
-  );
-}
-
-export default function ProfilePage() {
-  return (
-    <SessionProvider>
-      <ProfileContent />
-    </SessionProvider>
   );
 }

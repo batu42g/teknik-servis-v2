@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { SessionProvider } from 'next-auth/react';
 
 export default function Providers({ children }) {
   useEffect(() => {
@@ -17,5 +18,9 @@ export default function Providers({ children }) {
     loadBootstrap();
   }, []);
 
-  return children;
+  return (
+    <SessionProvider>
+      {children}
+    </SessionProvider>
+  );
 } 

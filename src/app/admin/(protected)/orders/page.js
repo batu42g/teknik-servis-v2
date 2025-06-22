@@ -81,7 +81,7 @@ export default function AdminOrdersPage() {
                 <td>#{order.id}</td>
                 <td>{order.user?.name || 'Silinmiş Kullanıcı'}</td>
                 <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                <td>{order.total.toFixed(2)} TL</td>
+                <td>{order.total ? `${order.total.toFixed(2)} TL` : '-'}</td>
                 <td>
                   <span className={`badge bg-${
                     order.status === 'pending' ? 'warning text-dark' : 
@@ -166,9 +166,9 @@ export default function AdminOrdersPage() {
                     {selectedOrder.items && selectedOrder.items.map(item => (
                       <tr key={item.id}>
                         <td>{item.product.name}</td>
-                        <td>{item.price.toFixed(2)} ₺</td>
+                        <td>{item.price ? `${item.price.toFixed(2)} ₺` : '-'}</td>
                         <td>{item.quantity}</td>
-                        <td>{(item.price * item.quantity).toFixed(2)} ₺</td>
+                        <td>{item.price ? `${(item.price * item.quantity).toFixed(2)} ₺` : '-'}</td>
                         <td>{item.rating ? `${item.rating} / 5` : 'Puanlanmamış'}</td>
                       </tr>
                     ))}
@@ -176,7 +176,7 @@ export default function AdminOrdersPage() {
                   <tfoot>
                     <tr>
                       <td colSpan="3" className="text-end"><strong>Genel Toplam:</strong></td>
-                      <td colSpan="2"><strong>{selectedOrder.total.toFixed(2)} ₺</strong></td>
+                      <td colSpan="2"><strong>{selectedOrder.total ? `${selectedOrder.total.toFixed(2)} ₺` : '-'}</strong></td>
                     </tr>
                   </tfoot>
                 </table>

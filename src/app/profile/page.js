@@ -4,8 +4,18 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
+// Sayfayı dinamik olarak işaretle
+export const dynamic = 'force-dynamic';
+
 export default function ProfilePage() {
-  const { data: session, status } = useSession();
+  const router = useRouter();
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push('/login');
+    },
+  });
+
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +23,6 @@ export default function ProfilePage() {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [rating, setRating] = useState('0');
-  const router = useRouter();
 
   // Profil güncelleme state'leri
   const [name, setName] = useState('');
@@ -28,11 +37,6 @@ export default function ProfilePage() {
   const [ratings, setRatings] = useState({});
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-      return;
-    }
-
     if (status === 'authenticated') {
       // Profil bilgilerini getir
       const fetchProfile = async () => {
@@ -73,7 +77,7 @@ export default function ProfilePage() {
       const interval = setInterval(fetchOrders, 30000);
       return () => clearInterval(interval);
     }
-  }, [status, router]);
+  }, [status]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();

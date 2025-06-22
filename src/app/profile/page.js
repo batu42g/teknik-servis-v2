@@ -158,7 +158,12 @@ export default function ProfilePage() {
             setSelectedOrder(updatedOrder);
           }
         }
+        // Puanlama modalını kapat
         setShowRatingModal(false);
+        // Seçili ürünü temizle
+        setSelectedItem(null);
+        // Puanı sıfırla
+        setRating('0');
       }
     } catch (error) {
       console.error('Puanlama sırasında hata:', error);

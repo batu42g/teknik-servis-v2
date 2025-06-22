@@ -93,11 +93,15 @@ export default function CartPage() {
         throw new Error(data.error || 'Sipariş oluşturulamadı.');
       }
       
-      setMessage({ type: 'success', text: 'Siparişiniz başarıyla oluşturuldu!' });
+      // Sepeti temizle
       updateCart([]);
+      
+      // Başarı sayfasına yönlendir
+      router.push(`/order-success?orderId=${data.id}`);
 
     } catch (err) {
       setMessage({ type: 'danger', text: err.message });
+      window.scrollTo(0, 0);
     } finally {
       setLoading(false);
     }
@@ -200,7 +204,17 @@ export default function CartPage() {
               onClick={handleCompletePurchase}
               disabled={loading}
             >
-              {loading ? 'İşleniyor...' : 'Siparişi Tamamla'}
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  İşleniyor...
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-bag-check me-2"></i>
+                  Siparişi Tamamla
+                </>
+              )}
             </button>
           </div>
         </div>

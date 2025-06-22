@@ -156,7 +156,9 @@ export default function AdminOrdersPage() {
                   <thead>
                     <tr>
                       <th>Ürün</th>
+                      <th>Birim Fiyat</th>
                       <th>Adet</th>
+                      <th>Toplam</th>
                       <th>Puan</th>
                     </tr>
                   </thead>
@@ -164,11 +166,19 @@ export default function AdminOrdersPage() {
                     {selectedOrder.items && selectedOrder.items.map(item => (
                       <tr key={item.id}>
                         <td>{item.product.name}</td>
+                        <td>{item.price.toFixed(2)} ₺</td>
                         <td>{item.quantity}</td>
+                        <td>{(item.price * item.quantity).toFixed(2)} ₺</td>
                         <td>{item.rating ? `${item.rating} / 5` : 'Puanlanmamış'}</td>
                       </tr>
                     ))}
                   </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan="3" className="text-end"><strong>Genel Toplam:</strong></td>
+                      <td colSpan="2"><strong>{selectedOrder.total.toFixed(2)} ₺</strong></td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
               <div className="modal-footer">

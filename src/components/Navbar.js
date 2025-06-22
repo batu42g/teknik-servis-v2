@@ -35,7 +35,10 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await signOut({ redirect: false });
+      await signOut({ 
+        redirect: false,
+        callbackUrl: '/' 
+      });
       localStorage.removeItem('cart');
       setCartCount(0);
       router.push('/');

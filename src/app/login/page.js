@@ -28,7 +28,15 @@ export default function LoginPage() {
         throw new Error(result.error);
       }
 
-      router.push('/profile');
+      // Kullanıcı rolüne göre yönlendirme yap
+      const userResponse = await fetch('/api/auth/profile');
+      const userData = await userResponse.json();
+      
+      if (userData.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
       router.refresh();
       
     } catch (err) {

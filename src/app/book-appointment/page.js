@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 function BookAppointmentForm() {
@@ -187,4 +187,31 @@ function BookAppointmentForm() {
   );
 }
 
-export default BookAppointmentForm; 
+// Yeni bir loading komponenti
+function LoadingState() {
+  return (
+    <div className="container my-5">
+      <div className="row justify-content-center">
+        <div className="col-md-8">
+          <div className="card">
+            <div className="card-body text-center">
+              <h2 className="card-title mb-4">Yükleniyor...</h2>
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Yükleniyor...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Ana sayfa komponenti
+export default function BookAppointmentPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <BookAppointmentForm />
+    </Suspense>
+  );
+} 

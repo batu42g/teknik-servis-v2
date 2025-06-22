@@ -1,8 +1,8 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
@@ -51,7 +51,7 @@ export default function Navbar() {
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
         <div className="container">
           <Link href="/" className="navbar-brand">
-            Teknik Servis
+            Efe Bilgisayar ve Güvenlik Sistemleri
           </Link>
         </div>
       </nav>
@@ -62,13 +62,16 @@ export default function Navbar() {
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="container">
         <Link href="/" className="navbar-brand">
-          Teknik Servis
+          Efe Bilgisayar ve Güvenlik Sistemleri
         </Link>
         <button
           className="navbar-toggler"
           type="button"
           data-bs-toggle="collapse"
           data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
         >
           <span className="navbar-toggler-icon"></span>
         </button>
@@ -84,54 +87,39 @@ export default function Navbar() {
                 Randevu Al
               </Link>
             </li>
-             <li className="nav-item">
+            <li className="nav-item">
               <Link href="/contact" className="nav-link">
                 İletişim
               </Link>
             </li>
-          </ul>
-          <ul className="navbar-nav">
             <li className="nav-item">
-              <Link href="/cart" className="nav-link">
-                <i className="bi bi-cart me-1"></i>
-                Sepet ({cartCount})
+              <Link href="/about" className="nav-link">
+                Hakkımızda
               </Link>
             </li>
+          </ul>
+          <ul className="navbar-nav">
             {user ? (
-              // KULLANICI GİRİŞ YAPMIŞSA:
-              <li className="nav-item dropdown">
-                <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i className="bi bi-person-circle me-1"></i>
-                  {user.name}
-                </a>
-                <ul className="dropdown-menu dropdown-menu-end">
-                  {user.role === 'admin' && (
-                    <li>
-                      <Link className="dropdown-item" href="/admin">
-                        Admin Paneli
-                      </Link>
-                    </li>
-                  )}
-                   <li>
-                    <Link className="dropdown-item" href="/messages">
-                      Mesajlarım
+              <>
+                <li className="nav-item">
+                  <Link href="/profile" className="nav-link">
+                    Profilim
+                  </Link>
+                </li>
+                {user.role === 'admin' && (
+                  <li className="nav-item">
+                    <Link href="/admin" className="nav-link">
+                      Admin Panel
                     </Link>
                   </li>
-                  <li>
-                    <Link className="dropdown-item" href="/profile">
-                      Profilim
-                    </Link>
-                  </li>
-                  <li><hr className="dropdown-divider" /></li>
-                  <li>
-                    <button onClick={handleLogout} className="dropdown-item">
-                      Çıkış Yap
-                    </button>
-                  </li>
-                </ul>
-              </li>
+                )}
+                <li className="nav-item">
+                  <Link href="/messages" className="nav-link">
+                    Mesajlar
+                  </Link>
+                </li>
+              </>
             ) : (
-              // KULLANICI GİRİŞ YAPMAMIŞSA:
               <>
                 <li className="nav-item">
                   <Link href="/login" className="nav-link">
@@ -145,6 +133,11 @@ export default function Navbar() {
                 </li>
               </>
             )}
+            <li className="nav-item">
+              <Link href="/cart" className="nav-link">
+                Sepet ({cartCount})
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

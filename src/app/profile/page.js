@@ -18,6 +18,7 @@ export default function ProfilePage() {
 
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -68,6 +69,19 @@ export default function ProfilePage() {
           }
         } catch (error) {
           console.error('Siparişler yüklenirken hata:', error);
+        }
+      };
+
+      // Randevuları getir
+      const fetchAppointments = async () => {
+        try {
+          const response = await fetch('/api/profile/appointments');
+          if (response.ok) {
+            const data = await response.json();
+            setAppointments(data);
+          }
+        } catch (error) {
+          console.error('Randevular yüklenirken hata:', error);
         } finally {
           setLoading(false);
         }
@@ -75,9 +89,13 @@ export default function ProfilePage() {
 
       fetchProfile();
       fetchOrders();
+      fetchAppointments();
 
-      // Her 30 saniyede bir siparişleri güncelle
-      const interval = setInterval(fetchOrders, 30000);
+      // Her 30 saniyede bir siparişleri ve randevuları güncelle
+      const interval = setInterval(() => {
+        fetchOrders();
+        fetchAppointments();
+      }, 30000);
       return () => clearInterval(interval);
     }
   }, [status, session, router]);
@@ -193,6 +211,52 @@ export default function ProfilePage() {
                 <p><strong>Email:</strong> {user?.email}</p>
                 <p><strong>Telefon:</strong> {user?.phone || 'Belirtilmemiş'}</p>
                 <p><strong>Adres:</strong> {user?.address || 'Belirtilmemiş'}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card mb-4">
+            <div className="card-body">
+              <h5 className="card-title">Randevularım</h5>
+              <div className="mt-3">
+                {appointments.length === 0 ? (
+                  <p className="text-muted">Henüz randevunuz bulunmamaktadır.</p>
+                ) : (
+                  <div className="list-group">
+                    {appointments.map((appointment) => (
+                      <div key={appointment.id} className="list-group-item">
+                        <h6 className="mb-1">{appointment.service.name}</h6>
+                        <p className="mb-1">
+                          <strong>Tarih:</strong>{' '}
+                          {new Date(appointment.appointmentDate).toLocaleDateString('tr-TR')}
+                        </p>
+                        <p className="mb-1">
+                          <strong>Saat:</strong>{' '}
+                          {new Date(appointment.appointmentDate).toLocaleTimeString('tr-TR', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                        <p className="mb-0">
+                          <strong>Durum:</strong>{' '}
+                          <span className={`badge ${
+                            appointment.status === 'PENDING' ? 'bg-warning' :
+                            appointment.status === 'CONFIRMED' ? 'bg-success' :
+                            appointment.status === 'IN_PROGRESS' ? 'bg-info' :
+                            appointment.status === 'CANCELLED' ? 'bg-danger' :
+                            'bg-secondary'
+                          }`}>
+                            {appointment.status === 'PENDING' ? 'Bekliyor' :
+                             appointment.status === 'CONFIRMED' ? 'Onaylandı' :
+                             appointment.status === 'IN_PROGRESS' ? 'Devam Ediyor' :
+                             appointment.status === 'CANCELLED' ? 'İptal Edildi' :
+                             'Bilinmiyor'}
+                          </span>
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

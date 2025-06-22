@@ -85,10 +85,10 @@ export default function AdminAppointmentsPage() {
                                     value={appt.status}
                                     onChange={(e) => handleStatusChange(appt.id, e.target.value)}
                                   >
-                                    <option value="pending">Bekliyor</option>
-                                    <option value="confirmed">Onaylandı</option>
-                                    <option value="completed">Tamamlandı</option>
-                                    <option value="cancelled">İptal Edildi</option>
+                                    <option value="PENDING">Bekliyor</option>
+                                    <option value="CONFIRMED">Onaylandı</option>
+                                    <option value="IN_PROGRESS">Devam Ediyor</option>
+                                    <option value="CANCELLED">İptal Edildi</option>
                                   </select>
                                 </td>
                                 <td>

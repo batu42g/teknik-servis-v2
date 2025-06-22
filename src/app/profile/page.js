@@ -225,17 +225,22 @@ export default function ProfilePage() {
                   <div className="list-group">
                     {appointments.map((appointment) => (
                       <div key={appointment.id} className="list-group-item">
-                        <h6 className="mb-1">{appointment.service.name}</h6>
+                        <h6 className="mb-1">{appointment.serviceType}</h6>
                         <p className="mb-1">
                           <strong>Tarih:</strong>{' '}
-                          {new Date(appointment.appointmentDate).toLocaleDateString('tr-TR')}
+                          {new Date(appointment.date).toLocaleDateString('tr-TR')}
                         </p>
                         <p className="mb-1">
                           <strong>Saat:</strong>{' '}
-                          {new Date(appointment.appointmentDate).toLocaleTimeString('tr-TR', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
+                          {appointment.time}
+                        </p>
+                        <p className="mb-1">
+                          <strong>Telefon:</strong>{' '}
+                          {appointment.phone}
+                        </p>
+                        <p className="mb-1">
+                          <strong>Adres:</strong>{' '}
+                          {appointment.address}
                         </p>
                         <p className="mb-0">
                           <strong>Durum:</strong>{' '}

@@ -19,9 +19,34 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Sepet boş.' }, { status: 400 });
     }
 
+    // Stok kontrolü yap
+    const productIds = cartItems.map(item => item.id);
+    const products = await prisma.product.findMany({
+      where: {
+        id: { in: productIds }
+      }
+    });
+
+    // Stok yetersizliği kontrolü
+    const stockErrors = [];
+    products.forEach(product => {
+      const cartItem = cartItems.find(item => item.id === product.id);
+      if (cartItem && cartItem.quantity > product.stock) {
+        stockErrors.push(`${product.name} için yeterli stok yok. Mevcut stok: ${product.stock}`);
+      }
+    });
+
+    if (stockErrors.length > 0) {
+      return NextResponse.json({ 
+        error: 'Stok yetersiz', 
+        details: stockErrors 
+      }, { status: 400 });
+    }
+
     const totalPrice = cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
 
     const order = await prisma.$transaction(async (tx) => {
+      // Siparişi oluştur
       const newOrder = await tx.order.create({
         data: {
           userId: userPayload.id,
@@ -31,19 +56,35 @@ export async function POST(request) {
           status: 'pending',
         },
       });
-      await tx.orderItem.createMany({
-        data: cartItems.map((item) => ({
-          orderId: newOrder.id,
-          productId: item.id,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-      });
+
+      // Sipariş öğelerini oluştur ve stokları güncelle
+      for (const item of cartItems) {
+        await tx.orderItem.create({
+          data: {
+            orderId: newOrder.id,
+            productId: item.id,
+            quantity: item.quantity,
+            price: item.price,
+          },
+        });
+
+        // Stok güncelleme
+        await tx.product.update({
+          where: { id: item.id },
+          data: {
+            stock: {
+              decrement: item.quantity
+            }
+          }
+        });
+      }
+
       return newOrder;
     });
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {
+    console.error('Sipariş oluşturma hatası:', error);
     return NextResponse.json({ error: 'Sunucu hatası.' }, { status: 500 });
   }
 }

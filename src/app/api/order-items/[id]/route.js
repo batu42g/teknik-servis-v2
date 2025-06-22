@@ -15,17 +15,21 @@ export async function PUT(request, { params }) {
       where: {
         id: id,
         order: { 
-          userId: session.user.id,
-          status: 'completed'  // Sadece tamamlanmış siparişler puanlanabilir
+          userId: session.user.id
         }
       },
       include: {
-        order: true
+        order: true,
+        product: {
+          select: {
+            name: true
+          }
+        }
       }
     });
 
     if (!orderItem) {
-      return NextResponse.json({ error: 'Geçersiz işlem. Sadece tamamlanmış siparişler puanlanabilir.' }, { status: 403 });
+      return NextResponse.json({ error: 'Geçersiz işlem. Bu ürünü puanlama yetkiniz yok.' }, { status: 403 });
     }
 
     // Zaten puanlanmış mı kontrol et

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 
 // Sayfayı dinamik olarak işaretle
 export const dynamic = 'force-dynamic';
@@ -110,12 +110,12 @@ export default function ProfilePage() {
         setCurrentPassword('');
         setNewPassword('');
 
-        // Email değiştiğinde sayfayı yenile
+        // Email değiştiğinde oturumu yenile
         if (email !== session?.user?.email) {
-          router.refresh();
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
+          setMessage({ type: 'success', text: 'Email adresiniz güncellendi. Yeniden giriş yapmanız gerekiyor.' });
+          setTimeout(async () => {
+            await signOut({ redirect: true, callbackUrl: '/login' });
+          }, 2000);
         }
       } else {
         setMessage({ type: 'danger', text: data.error || 'Bir hata oluştu.' });
@@ -317,7 +317,7 @@ export default function ProfilePage() {
                               )}
                             </td>
                             <td>
-                              {order.status === 'completed' && !item.rating && (
+                              {!item.rating && (
                                 <button
                                   className="btn btn-sm btn-outline-primary"
                                   onClick={() => handleRatingClick(item)}

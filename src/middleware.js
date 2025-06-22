@@ -1,45 +1,49 @@
+import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
 
-export async function middleware(request) {
-  const { pathname } = request.nextUrl;
-  
-  // Use next-auth's getToken instead of custom verification
-  const token = await getToken({ 
-    req: request,
-    secret: process.env.JWT_SECRET || 'your-super-secret-key-that-is-long-enough'
-  });
+export default withAuth(
+  function middleware(req) {
+    const { pathname } = req.nextUrl;
+    const token = req.nextauth.token;
 
-  // 1. Kural: Admin giriş sayfasını kontrol et
-  if (pathname.startsWith('/admin/login')) {
-    // Eğer kullanıcı zaten giriş yapmış ve admin ise, onu ana panele yönlendir.
-    if (token && token.role === 'admin') {
-      return NextResponse.redirect(new URL('/admin', request.url));
+    // Admin giriş sayfasını kontrol et
+    if (pathname.startsWith('/admin/login')) {
+      if (token?.role === 'admin') {
+        return NextResponse.redirect(new URL('/admin', req.url));
+      }
+      return NextResponse.next();
     }
-    // Değilse, giriş sayfasını görmesine izin ver.
+
+    // Admin sayfalarını koru
+    if (pathname.startsWith('/admin')) {
+      if (token?.role !== 'admin') {
+        return NextResponse.redirect(new URL('/admin/login', req.url));
+      }
+    }
+
     return NextResponse.next();
-  }
+  },
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        const { pathname } = req.nextUrl;
 
-  // 2. Kural: Diğer tüm admin sayfalarını koru
-  if (pathname.startsWith('/admin')) {
-    // Eğer kullanıcı giriş yapmamışsa VEYA rolü admin değilse, giriş sayfasına yönlendir.
-    if (!token || token.role !== 'admin') {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
-  }
+        // Profile sayfası için yetkilendirme
+        if (pathname.startsWith('/profile')) {
+          return !!token;
+        }
 
-  // 3. Kural: Profil sayfasını koru
-  if (pathname.startsWith('/profile')) {
-    if (!token) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
+        // Admin sayfaları için yetkilendirme
+        if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
+          return token?.role === 'admin';
+        }
 
-  // Eğer tüm kontrollerden geçtiyse, isteğin devam etmesine izin ver.
-  return NextResponse.next();
-}
+        return true;
+      },
+    },
+  }
+);
 
 export const config = {
-  // Middleware'in sadece bu sayfalarda çalışmasını sağla.
   matcher: ['/admin/:path*', '/profile/:path*'],
 };

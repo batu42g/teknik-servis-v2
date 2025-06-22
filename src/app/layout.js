@@ -2,17 +2,21 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './globals.css';
 import Navbar from '../components/Navbar';
 import Providers from './providers';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../lib/auth';
 
 export const metadata = {
   title: 'Teknoloji Mağazası',
   description: 'En yeni teknoloji ürünleri uygun fiyatlarla',
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="tr">
       <body>
-        <Providers>
+        <Providers session={session}>
           {/* STATİK NAVBAR KALDIRILDI, BİLEŞEN KULLANILIYOR */}
           <Navbar />
           <main className="container py-4">

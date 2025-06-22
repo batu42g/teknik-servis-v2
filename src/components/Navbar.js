@@ -60,7 +60,7 @@ export default function Navbar() {
         setCartCount(0);
         // Custom event tetikle
         window.dispatchEvent(new Event('authChange'));
-        router.push('/login');
+        router.push('/');
       }
     } catch (error) {
       console.error('Çıkış yapılırken hata oluştu:', error);

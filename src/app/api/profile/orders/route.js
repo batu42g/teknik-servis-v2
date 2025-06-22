@@ -1,27 +1,52 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../../lib/prisma';
-import { verifyAuth } from '../../../../lib/auth';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import prisma from '@/lib/prisma';
 
-export async function GET(request) {
+export async function GET() {
   try {
-    const userPayload = await verifyAuth(request);
-    if (!userPayload) return NextResponse.json({ error: 'Yetkisiz erişim.' }, { status: 401 });
-    
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Oturum açmanız gerekiyor.' }, { status: 401 });
+    }
+
     const orders = await prisma.order.findMany({
-      where: { userId: userPayload.id },
-      orderBy: { createdAt: 'desc' },
+      where: {
+        user: {
+          email: session.user.email
+        }
+      },
       include: {
         items: {
-          select: {
-            id: true,
-            rating: true,
-            product: { select: { name: true } }
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                price: true,
+              }
+            }
           }
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
-    return NextResponse.json(orders);
+
+    // Sipariş detaylarını düzenle
+    const formattedOrders = orders.map(order => ({
+      ...order,
+      items: order.items.map(item => ({
+        ...item,
+        price: item.product.price, // Ürünün fiyatını ekle
+        total: item.product.price * item.quantity // Toplam tutarı hesapla
+      }))
+    }));
+
+    return NextResponse.json(formattedOrders);
   } catch (error) {
-    return NextResponse.json({ error: 'Siparişler getirilemedi.' }, { status: 500 });
+    console.error('Siparişler alınırken hata:', error);
+    return NextResponse.json({ error: 'Bir hata oluştu.' }, { status: 500 });
   }
 }

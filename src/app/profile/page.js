@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function ProfilePage() {
+  const { data: session, status } = useSession();
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,41 +28,52 @@ export default function ProfilePage() {
   const [ratings, setRatings] = useState({});
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (!userData) {
+    if (status === 'unauthenticated') {
       router.push('/login');
       return;
     }
-    const parsedUser = JSON.parse(userData);
-    setUser(parsedUser);
-    
-    // Form alanlarını doldur
-    setName(parsedUser.name || '');
-    setEmail(parsedUser.email || '');
-    setPhone(parsedUser.phone || '');
-    setAddress(parsedUser.address || '');
 
-    // Siparişleri getir
-    const fetchOrders = async () => {
-      try {
-        const response = await fetch('/api/profile/orders');
-        if (response.ok) {
-          const data = await response.json();
-          setOrders(data);
+    if (status === 'authenticated') {
+      // Profil bilgilerini getir
+      const fetchProfile = async () => {
+        try {
+          const response = await fetch('/api/auth/profile');
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(userData);
+            setName(userData.name || '');
+            setEmail(userData.email || '');
+            setPhone(userData.phone || '');
+            setAddress(userData.address || '');
+          }
+        } catch (error) {
+          console.error('Profil bilgileri alınırken hata:', error);
         }
-      } catch (error) {
-        console.error('Siparişler yüklenirken hata:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchOrders();
+      // Siparişleri getir
+      const fetchOrders = async () => {
+        try {
+          const response = await fetch('/api/profile/orders');
+          if (response.ok) {
+            const data = await response.json();
+            setOrders(data);
+          }
+        } catch (error) {
+          console.error('Siparişler yüklenirken hata:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    // Her 30 saniyede bir siparişleri güncelle
-    const interval = setInterval(fetchOrders, 30000);
-    return () => clearInterval(interval);
-  }, [router]);
+      fetchProfile();
+      fetchOrders();
+
+      // Her 30 saniyede bir siparişleri güncelle
+      const interval = setInterval(fetchOrders, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [status, router]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -140,7 +153,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) {
+  if (status === 'loading' || loading) {
     return (
       <div className="d-flex justify-content-center py-5">
         <div className="spinner-border text-primary" role="status">
@@ -314,59 +327,70 @@ export default function ProfilePage() {
               </div>
               <div className="modal-body">
                 <div className="alert alert-light">
-                  <p className="mb-1"><strong>Durum:</strong> <span className={`badge bg-${
-                    selectedOrder.status === 'pending' ? 'warning text-dark' : 
-                    selectedOrder.status === 'completed' ? 'success' : 
-                    selectedOrder.status === 'cancelled' ? 'danger' : 'info'
-                  }`}>
-                    {selectedOrder.status === 'pending' ? 'Bekliyor' :
-                     selectedOrder.status === 'completed' ? 'Tamamlandı' :
-                     selectedOrder.status === 'cancelled' ? 'İptal Edildi' : selectedOrder.status}
-                  </span></p>
+                  <p className="mb-1">
+                    <strong>Durum:</strong>{' '}
+                    <span className={`badge bg-${
+                      selectedOrder.status === 'pending' ? 'warning text-dark' : 
+                      selectedOrder.status === 'completed' ? 'success' : 
+                      selectedOrder.status === 'cancelled' ? 'danger' : 'info'
+                    }`}>
+                      {selectedOrder.status === 'pending' ? 'Bekliyor' :
+                       selectedOrder.status === 'completed' ? 'Tamamlandı' :
+                       selectedOrder.status === 'cancelled' ? 'İptal Edildi' : selectedOrder.status}
+                    </span>
+                  </p>
                   <p className="mb-1"><strong>Tarih:</strong> {new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
-                  <p className="mb-0"><strong>Toplam Tutar:</strong> {selectedOrder.total?.toFixed(2) || '0.00'} TL</p>
+                  <p className="mb-0"><strong>Toplam Tutar:</strong> {selectedOrder.total?.toFixed(2)} TL</p>
                 </div>
                 <h6>Ürünler</h6>
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Ürün</th>
-                      <th>Adet</th>
-                      <th>Birim Fiyat</th>
-                      <th>Toplam</th>
-                      <th>Puan</th>
-                      <th>İşlem</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {selectedOrder.items?.map(item => (
-                      <tr key={item.id}>
-                        <td>{item.product?.name || 'Ürün bulunamadı'}</td>
-                        <td>{item.quantity || 0}</td>
-                        <td>{(item.price || 0).toFixed(2)} TL</td>
-                        <td>{((item.price || 0) * (item.quantity || 0)).toFixed(2)} TL</td>
-                        <td>
-                          {item.rating ? (
-                            <span className="text-warning">
-                              {'★'.repeat(item.rating)}{'☆'.repeat(5-item.rating)}
-                            </span>
-                          ) : 'Puanlanmamış'}
-                        </td>
-                        <td>
-                          {!item.rating && selectedOrder.status === 'completed' && (
-                            <button 
-                              className="btn btn-sm btn-outline-warning"
-                              onClick={() => handleRatingClick(item)}
-                            >
-                              <i className="bi bi-star me-1"></i>
-                              Puanla
-                            </button>
-                          )}
-                        </td>
+                <div className="table-responsive">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Ürün</th>
+                        <th>Adet</th>
+                        <th>Birim Fiyat</th>
+                        <th>Toplam</th>
+                        <th>Puan</th>
+                        <th>İşlem</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {selectedOrder.items?.map(item => (
+                        <tr key={item.id}>
+                          <td>{item.product?.name || 'Ürün bulunamadı'}</td>
+                          <td>{item.quantity}</td>
+                          <td>{item.product?.price?.toFixed(2)} TL</td>
+                          <td>{(item.product?.price * item.quantity)?.toFixed(2)} TL</td>
+                          <td>
+                            {item.rating ? (
+                              <span className="text-warning">
+                                {'★'.repeat(item.rating)}{'☆'.repeat(5-item.rating)}
+                              </span>
+                            ) : 'Puanlanmamış'}
+                          </td>
+                          <td>
+                            {!item.rating && selectedOrder.status === 'completed' && (
+                              <button 
+                                className="btn btn-sm btn-outline-warning"
+                                onClick={() => handleRatingClick(item)}
+                              >
+                                <i className="bi bi-star me-1"></i>
+                                Puanla
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <td colSpan="3" className="text-end"><strong>Genel Toplam:</strong></td>
+                        <td colSpan="3"><strong>{selectedOrder.total?.toFixed(2)} TL</strong></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={() => setSelectedOrder(null)}>

@@ -5,6 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 export default function AdminContactMessagesPage() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(null);
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -26,6 +27,31 @@ export default function AdminContactMessagesPage() {
     const interval = setInterval(fetchMessages, 30000);
     return () => clearInterval(interval);
   }, [fetchMessages]);
+
+  const handleDelete = async (messageId) => {
+    if (!window.confirm('Bu mesajı silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    setDeleting(messageId);
+    try {
+      const res = await fetch(`/api/admin/messages/${messageId}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        setMessages(messages.filter(msg => msg.id !== messageId));
+      } else {
+        const error = await res.json();
+        alert(error.error || 'Mesaj silinirken bir hata oluştu');
+      }
+    } catch (error) {
+      console.error('Mesaj silme hatası:', error);
+      alert('Mesaj silinirken bir hata oluştu');
+    } finally {
+      setDeleting(null);
+    }
+  };
   
   if (loading) {
     return (
@@ -58,9 +84,25 @@ export default function AdminContactMessagesPage() {
                   <small className="text-muted d-block">
                     {new Date(msg.createdAt).toLocaleString('tr-TR')}
                   </small>
-                  {msg.status === 'unread' && (
-                    <span className="badge bg-danger">Yeni</span>
-                  )}
+                  <div className="mt-2">
+                    {msg.status === 'unread' && (
+                      <span className="badge bg-danger me-2">Yeni</span>
+                    )}
+                    <button 
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => handleDelete(msg.id)}
+                      disabled={deleting === msg.id}
+                    >
+                      {deleting === msg.id ? (
+                        <>
+                          <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                          Siliniyor...
+                        </>
+                      ) : (
+                        'Sil'
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
               {msg.subject && (

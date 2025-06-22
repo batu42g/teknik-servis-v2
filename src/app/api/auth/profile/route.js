@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../../../../lib/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '../../../../lib/auth';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-key';
 

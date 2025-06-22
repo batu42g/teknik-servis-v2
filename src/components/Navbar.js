@@ -7,34 +7,43 @@ import { useRouter } from 'next/navigation';
 export default function Navbar() {
   const [cartCount, setCartCount] = useState(0);
   const [user, setUser] = useState(null);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    // Sepet sayısını güncelle
-    const updateCartCount = () => {
-      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-      setCartCount(cart.length);
-    };
-
-    // Kullanıcı bilgisini güncelle
-    const updateUser = () => {
-      const userData = localStorage.getItem('user');
-      if (userData) {
-        setUser(JSON.parse(userData));
-      } else {
+    setIsMounted(true);
+    
+    const handleStorageChange = () => {
+      try {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          setUser(JSON.parse(userData));
+        } else {
+          setUser(null);
+        }
+        
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        setCartCount(cart.length);
+      } catch (error) {
+        console.error('Veri okunurken hata:', error);
         setUser(null);
+        setCartCount(0);
       }
     };
 
-    updateCartCount();
-    updateUser();
+    // İlk yüklemede ve storage değişimlerinde çalışacak
+    handleStorageChange();
+    window.addEventListener('storage', handleStorageChange);
 
-    window.addEventListener('storage', updateCartCount);
-    window.addEventListener('storage', updateUser);
+    // Custom event dinleyicisi ekle
+    const handleAuthChange = () => {
+      handleStorageChange();
+    };
+    window.addEventListener('authChange', handleAuthChange);
 
     return () => {
-      window.removeEventListener('storage', updateCartCount);
-      window.removeEventListener('storage', updateUser);
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authChange', handleAuthChange);
     };
   }, []);
 
@@ -49,12 +58,27 @@ export default function Navbar() {
         localStorage.removeItem('cart');
         setUser(null);
         setCartCount(0);
+        // Custom event tetikle
+        window.dispatchEvent(new Event('authChange'));
         router.push('/login');
       }
     } catch (error) {
       console.error('Çıkış yapılırken hata oluştu:', error);
     }
   };
+
+  // Sayfa yüklenene kadar basit navbar göster
+  if (!isMounted) {
+    return (
+      <nav className="navbar navbar-expand-lg navbar-light bg-light">
+        <div className="container">
+          <Link href="/" className="navbar-brand">
+            Efe Bilgisayar ve Güvenlik Sistemleri
+          </Link>
+        </div>
+      </nav>
+    );
+  }
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -100,7 +124,7 @@ export default function Navbar() {
             {user ? (
               <li className="nav-item dropdown">
                 <a
-                  className="nav-link dropdown-toggle"
+                  className="nav-link dropdown-toggle d-flex align-items-center"
                   href="#"
                   role="button"
                   data-bs-toggle="dropdown"
@@ -113,23 +137,27 @@ export default function Navbar() {
                   {user.role === 'admin' && (
                     <li>
                       <Link className="dropdown-item" href="/admin">
+                        <i className="bi bi-speedometer2 me-2"></i>
                         Admin Paneli
                       </Link>
                     </li>
                   )}
                   <li>
                     <Link className="dropdown-item" href="/messages">
+                      <i className="bi bi-envelope me-2"></i>
                       Mesajlarım
                     </Link>
                   </li>
                   <li>
                     <Link className="dropdown-item" href="/profile">
+                      <i className="bi bi-person me-2"></i>
                       Profilim
                     </Link>
                   </li>
                   <li><hr className="dropdown-divider" /></li>
                   <li>
-                    <button onClick={handleLogout} className="dropdown-item">
+                    <button onClick={handleLogout} className="dropdown-item text-danger">
+                      <i className="bi bi-box-arrow-right me-2"></i>
                       Çıkış Yap
                     </button>
                   </li>
@@ -139,11 +167,13 @@ export default function Navbar() {
               <>
                 <li className="nav-item">
                   <Link href="/login" className="nav-link">
+                    <i className="bi bi-box-arrow-in-right me-1"></i>
                     Giriş Yap
                   </Link>
                 </li>
                 <li className="nav-item">
                   <Link href="/register" className="nav-link">
+                    <i className="bi bi-person-plus me-1"></i>
                     Kayıt Ol
                   </Link>
                 </li>

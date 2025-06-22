@@ -283,7 +283,15 @@ export default function ProfilePage() {
                 <div className="card-header d-flex justify-content-between align-items-center">
                   <div>
                     <strong>Sipariş #{order.id}</strong>
-                    <span className="ms-2 badge bg-secondary">{order.status}</span>
+                    <span className={`ms-2 badge ${
+                      order.status === 'pending' ? 'bg-warning text-dark' : 
+                      order.status === 'completed' ? 'bg-success' : 
+                      order.status === 'cancelled' ? 'bg-danger' : 'bg-secondary'
+                    }`}>
+                      {order.status === 'pending' ? 'Bekliyor' :
+                       order.status === 'completed' ? 'Tamamlandı' :
+                       order.status === 'cancelled' ? 'İptal Edildi' : order.status}
+                    </span>
                   </div>
                   <small>{new Date(order.createdAt).toLocaleDateString('tr-TR')}</small>
                 </div>

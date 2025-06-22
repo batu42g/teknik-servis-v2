@@ -14,7 +14,7 @@ export default function AdminContactMessagesPage() {
         setMessages(data);
       }
     } catch (error) {
-      console.error(error);
+      console.error('Mesajlar yüklenirken hata:', error);
     } finally {
       setLoading(false);
     }
@@ -22,25 +22,63 @@ export default function AdminContactMessagesPage() {
 
   useEffect(() => {
     fetchMessages();
+    // Her 30 saniyede bir mesajları güncelle
+    const interval = setInterval(fetchMessages, 30000);
+    return () => clearInterval(interval);
   }, [fetchMessages]);
   
-  if (loading) return <div>Mesajlar yükleniyor...</div>;
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Yükleniyor...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <h1 className="h2 pt-3 pb-2 mb-3 border-bottom">İletişim Mesajları</h1>
-      <div className="list-group">
-        {messages.length > 0 ? messages.map((msg) => (
-          <div key={msg.id} className="list-group-item list-group-item-action flex-column align-items-start">
-            <div className="d-flex w-100 justify-content-between">
-              <h5 className="mb-1">{msg.name}</h5>
-              <small>{new Date(msg.createdAt).toLocaleString()}</small>
-            </div>
-            <p className="mb-1">{msg.message}</p>
-            <small className="text-muted">{msg.email}</small>
-          </div>
-        )) : <p>Gösterilecek mesaj bulunmuyor.</p>}
-      </div>
-    </>
+    <div className="container-fluid py-3">
+      <h1 className="h2 mb-4">İletişim Mesajları</h1>
+      
+      {messages.length === 0 ? (
+        <div className="alert alert-info">Henüz hiç mesaj bulunmuyor.</div>
+      ) : (
+        <div className="table-responsive">
+          <table className="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th>Tarih</th>
+                <th>İsim</th>
+                <th>Email</th>
+                <th>Konu</th>
+                <th>Mesaj</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+            <tbody>
+              {messages.map((msg) => (
+                <tr key={msg.id}>
+                  <td>{new Date(msg.createdAt).toLocaleString('tr-TR')}</td>
+                  <td>{msg.name}</td>
+                  <td>
+                    <a href={`mailto:${msg.email}`} className="text-decoration-none">
+                      {msg.email}
+                    </a>
+                  </td>
+                  <td>{msg.subject}</td>
+                  <td>{msg.message}</td>
+                  <td>
+                    <span className={`badge ${msg.status === 'unread' ? 'bg-danger' : 'bg-success'}`}>
+                      {msg.status === 'unread' ? 'Okunmadı' : 'Okundu'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 } 

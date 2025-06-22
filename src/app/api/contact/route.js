@@ -5,7 +5,7 @@ export async function POST(request) {
   try {
     const { name, email, subject, message } = await request.json();
 
-    if (!name || !email || !message) {
+    if (!name || !email || !subject || !message) {
       return NextResponse.json({ error: 'Tüm zorunlu alanlar doldurulmalıdır.' }, { status: 400 });
     }
     
@@ -13,6 +13,7 @@ export async function POST(request) {
       data: {
         name,
         email,
+        subject,
         message,
         status: 'unread',
       },

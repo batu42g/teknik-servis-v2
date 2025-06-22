@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server';
-import { verifyAuth } from './lib/auth';
+import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
-  const userPayload = await verifyAuth(request); // Token'ı çerezden okuyup doğrula
+  
+  // Use next-auth's getToken instead of custom verification
+  const token = await getToken({ 
+    req: request,
+    secret: process.env.JWT_SECRET || 'your-super-secret-key-that-is-long-enough'
+  });
 
   // 1. Kural: Admin giriş sayfasını kontrol et
   if (pathname.startsWith('/admin/login')) {
     // Eğer kullanıcı zaten giriş yapmış ve admin ise, onu ana panele yönlendir.
-    if (userPayload && userPayload.role === 'admin') {
+    if (token && token.role === 'admin') {
       return NextResponse.redirect(new URL('/admin', request.url));
     }
     // Değilse, giriş sayfasını görmesine izin ver.
@@ -18,14 +23,14 @@ export async function middleware(request) {
   // 2. Kural: Diğer tüm admin sayfalarını koru
   if (pathname.startsWith('/admin')) {
     // Eğer kullanıcı giriş yapmamışsa VEYA rolü admin değilse, giriş sayfasına yönlendir.
-    if (!userPayload || userPayload.role !== 'admin') {
+    if (!token || token.role !== 'admin') {
       return NextResponse.redirect(new URL('/admin/login', request.url));
     }
   }
 
   // 3. Kural: Profil sayfasını koru
   if (pathname.startsWith('/profile')) {
-    if (!userPayload) {
+    if (!token) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }

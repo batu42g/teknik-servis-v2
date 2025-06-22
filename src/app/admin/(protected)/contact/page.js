@@ -44,39 +44,31 @@ export default function AdminContactMessagesPage() {
       {messages.length === 0 ? (
         <div className="alert alert-info">Henüz hiç mesaj bulunmuyor.</div>
       ) : (
-        <div className="table-responsive">
-          <table className="table table-striped table-hover">
-            <thead>
-              <tr>
-                <th>Tarih</th>
-                <th>İsim</th>
-                <th>Email</th>
-                <th>Konu</th>
-                <th>Mesaj</th>
-                <th>Durum</th>
-              </tr>
-            </thead>
-            <tbody>
-              {messages.map((msg) => (
-                <tr key={msg.id}>
-                  <td>{new Date(msg.createdAt).toLocaleString('tr-TR')}</td>
-                  <td>{msg.name}</td>
-                  <td>
-                    <a href={`mailto:${msg.email}`} className="text-decoration-none">
-                      {msg.email}
-                    </a>
-                  </td>
-                  <td>{msg.subject}</td>
-                  <td>{msg.message}</td>
-                  <td>
-                    <span className={`badge ${msg.status === 'unread' ? 'bg-danger' : 'bg-success'}`}>
-                      {msg.status === 'unread' ? 'Okunmadı' : 'Okundu'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="list-group">
+          {messages.map((msg) => (
+            <div key={msg.id} className="list-group-item list-group-item-action flex-column align-items-start">
+              <div className="d-flex w-100 justify-content-between align-items-center mb-2">
+                <div>
+                  <h5 className="mb-1">{msg.name}</h5>
+                  <a href={`mailto:${msg.email}`} className="text-decoration-none">
+                    {msg.email}
+                  </a>
+                </div>
+                <div className="text-end">
+                  <small className="text-muted d-block">
+                    {new Date(msg.createdAt).toLocaleString('tr-TR')}
+                  </small>
+                  {msg.status === 'unread' && (
+                    <span className="badge bg-danger">Yeni</span>
+                  )}
+                </div>
+              </div>
+              {msg.subject && (
+                <h6 className="mb-2">{msg.subject}</h6>
+              )}
+              <p className="mb-1">{msg.message}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>

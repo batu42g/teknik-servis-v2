@@ -109,6 +109,14 @@ export default function ProfilePage() {
         // Şifre alanlarını temizle
         setCurrentPassword('');
         setNewPassword('');
+
+        // Email değiştiğinde sayfayı yenile
+        if (email !== session?.user?.email) {
+          router.refresh();
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        }
       } else {
         setMessage({ type: 'danger', text: data.error || 'Bir hata oluştu.' });
       }

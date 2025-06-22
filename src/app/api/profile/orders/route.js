@@ -39,11 +39,21 @@ export async function GET() {
 
     // Sipariş detaylarını düzenle
     const formattedOrders = orders.map(order => ({
-      ...order,
+      id: order.id,
+      status: order.status,
+      createdAt: order.createdAt,
+      total: order.total,
       items: order.items.map(item => ({
-        ...item,
-        price: item.product.price, // Ürünün fiyatını ekle
-        total: item.product.price * item.quantity // Toplam tutarı hesapla
+        id: item.id,
+        productId: item.productId,
+        quantity: item.quantity,
+        price: item.product.price,
+        rating: item.rating,
+        product: {
+          id: item.product.id,
+          name: item.product.name,
+          price: item.product.price
+        }
       }))
     }));
 

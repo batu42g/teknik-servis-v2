@@ -12,22 +12,45 @@ export async function PUT(request, { params }) {
     const { rating } = await request.json();
     
     const orderItem = await prisma.orderItem.findFirst({
-        where: {
-            id: id,
-            order: { userId: session.user.id }
+      where: {
+        id: id,
+        order: { 
+          userId: session.user.id,
+          status: 'completed'  // Sadece tamamlanmış siparişler puanlanabilir
         }
+      },
+      include: {
+        order: true
+      }
     });
 
     if (!orderItem) {
-        return NextResponse.json({ error: 'Geçersiz işlem.' }, { status: 403 });
+      return NextResponse.json({ error: 'Geçersiz işlem. Sadece tamamlanmış siparişler puanlanabilir.' }, { status: 403 });
     }
 
-    await prisma.orderItem.update({
+    // Zaten puanlanmış mı kontrol et
+    if (orderItem.rating) {
+      return NextResponse.json({ error: 'Bu ürün zaten puanlanmış.' }, { status: 400 });
+    }
+
+    const updatedItem = await prisma.orderItem.update({
       where: { id: id },
       data: { rating: parseInt(rating) },
+      include: {
+        product: {
+          select: {
+            name: true
+          }
+        }
+      }
     });
-    return NextResponse.json({ success: true });
+
+    return NextResponse.json({
+      success: true,
+      message: `${updatedItem.product.name} için puanınız başarıyla kaydedildi.`
+    });
   } catch (error) {
+    console.error('Puanlama hatası:', error);
     return NextResponse.json({ error: 'Puanlama başarısız.' }, { status: 500 });
   }
 }

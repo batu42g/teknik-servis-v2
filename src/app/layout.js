@@ -3,7 +3,7 @@ import './globals.css';
 import Navbar from '../components/Navbar';
 import Providers from './providers';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../lib/auth';
+import { authOptions } from '@/lib/auth';
 
 export const metadata = {
   title: 'Teknoloji Mağazası',

@@ -96,6 +96,7 @@ export default function ProfilePage() {
         setMessage({ type: 'danger', text: data.error || 'Bir hata oluştu.' });
       }
     } catch (error) {
+      console.error('Profil güncellenirken hata:', error);
       setMessage({ type: 'danger', text: 'Bir hata oluştu. Lütfen tekrar deneyin.' });
     }
   };

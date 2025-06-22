@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 function BookAppointmentForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const [formData, setFormData] = useState({
     serviceType: searchParams.get('service') || '',
@@ -20,6 +22,13 @@ function BookAppointmentForm() {
   const [loading, setLoading] = useState(false);
   const [services, setServices] = useState([]);
   const [availableSlots, setAvailableSlots] = useState({});
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login?redirect=/book-appointment');
+      return;
+    }
+  }, [status, router]);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -85,10 +94,6 @@ function BookAppointmentForm() {
 
       const data = await res.json();
       if (!res.ok) {
-        if (res.status === 401) {
-          router.push('/login?redirect=/book-appointment');
-          return;
-        }
         throw new Error(data.error || 'Randevu oluşturulamadı.');
       }
       
@@ -101,6 +106,14 @@ function BookAppointmentForm() {
       setLoading(false);
     }
   };
+
+  if (status === 'loading') {
+    return <LoadingState />;
+  }
+
+  if (status === 'unauthenticated') {
+    return null; // useEffect zaten yönlendirme yapacak
+  }
 
   // Saatleri oluştur
   const timeSlots = [
@@ -207,7 +220,6 @@ function LoadingState() {
   );
 }
 
-// Ana sayfa komponenti
 export default function BookAppointmentPage() {
   return (
     <Suspense fallback={<LoadingState />}>

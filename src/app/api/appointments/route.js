@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
-import { verifyAuth } from '../../../lib/auth';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../../../lib/auth';
 
 const MAX_APPOINTMENTS_PER_SLOT = 2;
 
@@ -9,8 +10,8 @@ export const revalidate = 0;
 
 export async function POST(request) {
   try {
-    const userPayload = await verifyAuth(request);
-    if (!userPayload) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json({ error: 'Bu işlemi yapmak için giriş yapmalısınız.' }, { status: 401 });
     }
 
@@ -41,13 +42,13 @@ export async function POST(request) {
 
     const newAppointment = await prisma.appointment.create({
       data: {
-        userId: userPayload.id,
+        userId: session.user.id,
         serviceType,
         description,
         date: new Date(date),
         time,
-        phone, // Veritabanına ekle
-        address, // Veritabanına ekle
+        phone,
+        address,
         status: 'pending',
       },
     });
@@ -61,14 +62,14 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    const userPayload = await verifyAuth(request);
-    if (!userPayload) {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
       return NextResponse.json({ error: 'Bu işlemi yapmak için giriş yapmalısınız.' }, { status: 401 });
     }
 
     const appointments = await prisma.appointment.findMany({
       where: {
-        userId: userPayload.id
+        userId: session.user.id
       },
       orderBy: {
         createdAt: 'desc'

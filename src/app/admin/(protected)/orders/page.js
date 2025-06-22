@@ -6,6 +6,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [updating, setUpdating] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -22,12 +23,46 @@ export default function AdminOrdersPage() {
   }, []);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (res.ok) {
+        const updatedOrder = await res.json();
+        setOrders(orders.map(order => 
+          order.id === orderId ? updatedOrder : order
+        ));
+        setSelectedOrder(updatedOrder);
+      } else {
+        const error = await res.json();
+        alert(error.error || 'Durum güncellenirken bir hata oluştu.');
+      }
+    } catch (error) {
+      console.error('Durum güncelleme hatası:', error);
+      alert('Durum güncellenirken bir hata oluştu.');
+    } finally {
+      setUpdating(false);
+    }
+  };
   
-  if (loading) return <div>Siparişler yükleniyor...</div>;
+  if (loading) return (
+    <div className="d-flex justify-content-center py-5">
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Yükleniyor...</span>
+      </div>
+    </div>
+  );
 
   return (
-    <>
-      <h1 className="h2 pt-3 pb-2 mb-3 border-bottom">Sipariş Yönetimi</h1>
+    <div className="container-fluid py-3">
+      <h1 className="h2 mb-3 border-bottom pb-2">Sipariş Yönetimi</h1>
+      
       <div className="table-responsive">
         <table className="table table-striped">
           <thead>
@@ -48,9 +83,11 @@ export default function AdminOrdersPage() {
                 <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                 <td>{order.total.toFixed(2)} TL</td>
                 <td>
-                  <span className={`badge bg-${order.status === 'pending' ? 'warning text-dark' : 
+                  <span className={`badge bg-${
+                    order.status === 'pending' ? 'warning text-dark' : 
                     order.status === 'completed' ? 'success' : 
-                    order.status === 'cancelled' ? 'danger' : 'info'}`}>
+                    order.status === 'cancelled' ? 'danger' : 'info'
+                  }`}>
                     {order.status === 'pending' ? 'Bekliyor' :
                      order.status === 'completed' ? 'Tamamlandı' :
                      order.status === 'cancelled' ? 'İptal Edildi' : order.status}
@@ -79,6 +116,33 @@ export default function AdminOrdersPage() {
                 <button type="button" className="btn-close" onClick={() => setSelectedOrder(null)}></button>
               </div>
               <div className="modal-body">
+                <div className="mb-4">
+                  <h6>Durum Güncelle</h6>
+                  <div className="btn-group">
+                    <button
+                      className={`btn btn${selectedOrder.status === 'pending' ? '' : '-outline'}-warning`}
+                      onClick={() => handleStatusChange(selectedOrder.id, 'pending')}
+                      disabled={updating}
+                    >
+                      Bekliyor
+                    </button>
+                    <button
+                      className={`btn btn${selectedOrder.status === 'completed' ? '' : '-outline'}-success`}
+                      onClick={() => handleStatusChange(selectedOrder.id, 'completed')}
+                      disabled={updating}
+                    >
+                      Tamamlandı
+                    </button>
+                    <button
+                      className={`btn btn${selectedOrder.status === 'cancelled' ? '' : '-outline'}-danger`}
+                      onClick={() => handleStatusChange(selectedOrder.id, 'cancelled')}
+                      disabled={updating}
+                    >
+                      İptal Edildi
+                    </button>
+                  </div>
+                </div>
+
                 <h6>Müşteri Bilgileri</h6>
                 <p>
                   <strong>İsim:</strong> {selectedOrder.user?.name}<br/>
@@ -107,10 +171,15 @@ export default function AdminOrdersPage() {
                   </tbody>
                 </table>
               </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setSelectedOrder(null)}>
+                  Kapat
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 } 

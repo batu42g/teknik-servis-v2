@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   // Form state'leri
   const [name, setName] = useState('');
@@ -22,27 +24,34 @@ export default function ProfilePage() {
   const [ratings, setRatings] = useState({});
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-        if (!storedUser) { window.location.href = '/login'; return; }
-        
-        setUser(storedUser);
-        setName(storedUser.name || '');
-        setEmail(storedUser.email || '');
-        setPhone(storedUser.phone || '');
-        setAddress(storedUser.address || '');
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      router.push('/login');
+      return;
+    }
+    setUser(JSON.parse(userData));
 
-        const ordersRes = await fetch('/api/profile/orders', { cache: 'no-store' });
-        if (ordersRes.ok) {
-          const ordersData = await ordersRes.json();
-          setOrders(ordersData);
+    // Siparişleri getir
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch('/api/profile/orders');
+        if (response.ok) {
+          const data = await response.json();
+          setOrders(data);
         }
-      } catch (error) { console.error("Veri yüklenirken hata:", error); } 
-      finally { setLoading(false); }
+      } catch (error) {
+        console.error('Siparişler yüklenirken hata:', error);
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchData();
-  }, []);
+
+    fetchOrders();
+
+    // Her 30 saniyede bir siparişleri güncelle
+    const interval = setInterval(fetchOrders, 30000);
+    return () => clearInterval(interval);
+  }, [router]);
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
@@ -102,88 +111,78 @@ export default function ProfilePage() {
     window.location.reload();
   };
 
-  if (loading || !user) {
-    return <div className="container text-center my-5">Yükleniyor...</div>;
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Yükleniyor...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="container my-5">
+    <div className="container py-5">
       <div className="row">
         <div className="col-md-4">
           <div className="card">
-            <div className="card-body text-center">
-              <h4 className="mb-3">{user.name}</h4>
-              <p className="text-muted">{user.email}</p>
+            <div className="card-body">
+              <h5 className="card-title">Profil Bilgilerim</h5>
+              <div className="mt-3">
+                <p><strong>İsim:</strong> {user?.name}</p>
+                <p><strong>Email:</strong> {user?.email}</p>
+                <p><strong>Telefon:</strong> {user?.phone || 'Belirtilmemiş'}</p>
+                <p><strong>Adres:</strong> {user?.address || 'Belirtilmemiş'}</p>
+              </div>
             </div>
           </div>
         </div>
+
         <div className="col-md-8">
           <div className="card">
-            <div className="card-body">
-              <h5 className="card-title">Profil Bilgileri</h5>
-              {message.text && <div className={`alert alert-${message.type} mt-3`}>{message.text}</div>}
-              <form onSubmit={handleUpdateProfile} className="mt-3">
-                <div className="mb-3">
-                  <label htmlFor="name" className="form-label">Ad Soyad</label>
-                  <input type="text" className="form-control" id="name" value={name} onChange={e => setName(e.target.value)} required />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="email" className="form-label">E-posta</label>
-                  <input type="email" className="form-control" id="email" value={email} onChange={e => setEmail(e.target.value)} required />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="phone" className="form-label">Telefon</label>
-                  <input type="tel" className="form-control" id="phone" value={phone || ''} onChange={e => setPhone(e.target.value)} />
-                </div>
-                 <div className="mb-3">
-                  <label htmlFor="address" className="form-label">Teslimat Adresi</label>
-                  <textarea className="form-control" id="address" rows={3} value={address || ''} onChange={e => setAddress(e.target.value)}></textarea>
-                </div>
-                <hr />
-                <h6 className="mt-4">Şifre Değiştir</h6>
-                <div className="mb-3">
-                    <label htmlFor="currentPassword" className="form-label">Mevcut Şifre</label>
-                    <input type="password" placeholder="Şifre değiştirmek için doldurun" className="form-control" id="currentPassword" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="newPassword" className="form-label">Yeni Şifre</label>
-                    <input type="password" className="form-control" id="newPassword" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
-                </div>
-                <button type="submit" className="btn btn-primary">Bilgileri Güncelle</button>
-              </form>
-            </div>
-          </div>
-
-          <div className="card mt-4">
             <div className="card-body">
               <h5 className="card-title">Sipariş Geçmişim</h5>
               {orders.length > 0 ? (
                 <div className="table-responsive">
                   <table className="table mt-3">
-                      <thead>
+                    <thead>
                       <tr>
-                          <th>Sipariş ID</th>
-                          <th>Tarih</th>
-                          <th>Tutar</th>
-                          <th>Durum</th>
-                          <th>İşlem</th>
+                        <th>Sipariş ID</th>
+                        <th>Tarih</th>
+                        <th>Tutar</th>
+                        <th>Durum</th>
+                        <th>Detaylar</th>
                       </tr>
-                      </thead>
-                      <tbody>
+                    </thead>
+                    <tbody>
                       {orders.map(order => (
-                          <tr key={order.id}>
+                        <tr key={order.id}>
                           <td>#{order.id}</td>
                           <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                           <td>{order.total.toFixed(2)} TL</td>
-                          <td>{order.status}</td>
                           <td>
-                             <button className="btn btn-sm btn-outline-primary" onClick={() => openRatingModal(order)}>
-                               Değerlendir
-                             </button>
+                            <span className={`badge bg-${
+                              order.status === 'pending' ? 'warning text-dark' : 
+                              order.status === 'completed' ? 'success' : 
+                              order.status === 'cancelled' ? 'danger' : 'info'
+                            }`}>
+                              {order.status === 'pending' ? 'Bekliyor' :
+                               order.status === 'completed' ? 'Tamamlandı' :
+                               order.status === 'cancelled' ? 'İptal Edildi' : order.status}
+                            </span>
                           </td>
-                          </tr>
+                          <td>
+                            <button 
+                              className="btn btn-sm btn-outline-primary"
+                              onClick={() => setSelectedOrder(order)}
+                            >
+                              <i className="bi bi-eye me-1"></i>
+                              Detaylar
+                            </button>
+                          </td>
+                        </tr>
                       ))}
-                      </tbody>
+                    </tbody>
                   </table>
                 </div>
               ) : (
@@ -194,40 +193,67 @@ export default function ProfilePage() {
         </div>
       </div>
 
-       {showRatingModal && selectedOrder && (
+      {/* Sipariş Detay Modalı */}
+      {selectedOrder && (
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <form onSubmit={handleRatingSubmit}>
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Siparişi Değerlendir (#{selectedOrder.id})</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowRatingModal(false)}></button>
-                </div>
-                <div className="modal-body">
-                  {selectedOrder.items.map(item => (
-                    <div key={item.id} className="mb-3">
-                      <label className="form-label">{item.product.name}</label>
-                      <select 
-                        className="form-select"
-                        value={ratings[item.id] || "0"}
-                        onChange={(e) => handleRatingChange(item.id, e.target.value)}
-                      >
-                        <option value="0" disabled>Puan Seçin...</option>
-                        <option value="1">1 - Çok Kötü</option>
-                        <option value="2">2 - Kötü</option>
-                        <option value="3">3 - Orta</option>
-                        <option value="4">4 - İyi</option>
-                        <option value="5">5 - Çok İyi</option>
-                      </select>
-                    </div>
-                  ))}
-                </div>
-                <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowRatingModal(false)}>Kapat</button>
-                  <button type="submit" className="btn btn-primary">Puanları Kaydet</button>
-                </div>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Sipariş Detayları (#{selectedOrder.id})</h5>
+                <button type="button" className="btn-close" onClick={() => setSelectedOrder(null)}></button>
               </div>
-            </form>
+              <div className="modal-body">
+                <div className="alert alert-light">
+                  <p className="mb-1"><strong>Durum:</strong> <span className={`badge bg-${
+                    selectedOrder.status === 'pending' ? 'warning text-dark' : 
+                    selectedOrder.status === 'completed' ? 'success' : 
+                    selectedOrder.status === 'cancelled' ? 'danger' : 'info'
+                  }`}>
+                    {selectedOrder.status === 'pending' ? 'Bekliyor' :
+                     selectedOrder.status === 'completed' ? 'Tamamlandı' :
+                     selectedOrder.status === 'cancelled' ? 'İptal Edildi' : selectedOrder.status}
+                  </span></p>
+                  <p className="mb-1"><strong>Tarih:</strong> {new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
+                  <p className="mb-0"><strong>Toplam Tutar:</strong> {selectedOrder.total.toFixed(2)} TL</p>
+                </div>
+                <h6>Ürünler</h6>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Ürün</th>
+                      <th>Adet</th>
+                      <th>Puan</th>
+                      <th>İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedOrder.items.map(item => (
+                      <tr key={item.id}>
+                        <td>{item.product.name}</td>
+                        <td>{item.quantity}</td>
+                        <td>{item.rating ? `${item.rating} / 5` : 'Puanlanmamış'}</td>
+                        <td>
+                          {!item.rating && selectedOrder.status === 'completed' && (
+                            <button 
+                              className="btn btn-sm btn-outline-primary"
+                              onClick={() => handleRatingClick(item)}
+                            >
+                              <i className="bi bi-star me-1"></i>
+                              Puanla
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setSelectedOrder(null)}>
+                  Kapat
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

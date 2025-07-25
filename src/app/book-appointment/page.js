@@ -121,78 +121,155 @@ function BookAppointmentForm() {
   ];
 
   return (
-    <div className="container my-5">
-      <div className="row justify-content-center">
-        <div className="col-md-8">
-          <div className="card">
-            <div className="card-body">
-              <h2 className="card-title text-center mb-4">Teknik Servis Randevusu Al</h2>
-              {error && <div className="alert alert-danger">{error}</div>}
-              {success && <div className="alert alert-success">{success}</div>}
-              <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                  <label htmlFor="serviceType" className="form-label">Servis Tipi</label>
-                  <select className="form-select" id="serviceType" value={formData.serviceType} onChange={handleChange} required>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div className="p-8">
+            <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
+              Teknik Servis Randevusu
+            </h2>
+            
+            {error && (
+              <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4">
+                <p className="text-red-700">{error}</p>
+              </div>
+            )}
+            
+            {success && (
+              <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4">
+                <p className="text-green-700">{success}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="serviceType" className="block text-sm font-medium text-gray-700 mb-2">
+                  Servis Tipi
+                </label>
+                <select
+                  id="serviceType"
+                  value={formData.serviceType}
+                  onChange={handleChange}
+                  required
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  <option value="">Seçiniz...</option>
+                  {services.map(service => (
+                    <option key={service.id} value={service.name}>
+                      {service.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                  İsteğe Bağlı
+                </label>
+                <textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={3}
+                  placeholder="Varsa özel notlarınızı buraya yazabilirsiniz..."
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                  Telefon Numaranız
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+                  Adresiniz
+                </label>
+                <textarea
+                  id="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  required
+                  rows={3}
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+                    Randevu Tarihi
+                  </label>
+                  <input
+                    type="date"
+                    id="date"
+                    value={formData.date}
+                    onChange={handleChange}
+                    required
+                    min={new Date().toISOString().split('T')[0]}
+                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-2">
+                    Randevu Saati
+                  </label>
+                  <select
+                    id="time"
+                    value={formData.time}
+                    onChange={handleChange}
+                    required
+                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
                     <option value="">Seçiniz...</option>
-                    {services.map(service => (
-                      <option key={service.id} value={service.name}>
-                        {service.name}
-                      </option>
-                    ))}
+                    {timeSlots.map(time => {
+                      const slotCount = availableSlots[time] || 0;
+                      const isAvailable = slotCount < 2;
+                      return (
+                        <option
+                          key={time}
+                          value={time}
+                          disabled={!isAvailable}
+                          className={!isAvailable ? 'text-gray-400' : ''}
+                        >
+                          {time} {!isAvailable ? '(Dolu)' : ''}
+                        </option>
+                      );
+                    })}
                   </select>
                 </div>
-                <div className="mb-3">
-                  <label htmlFor="description" className="form-label">Sorun Açıklaması</label>
-                  <textarea className="form-control" id="description" rows={3} value={formData.description} onChange={handleChange} required></textarea>
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="phone" className="form-label">Telefon Numaranız</label>
-                  <input type="tel" className="form-control" id="phone" value={formData.phone} onChange={handleChange} required />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="address" className="form-label">Adresiniz</label>
-                  <textarea className="form-control" id="address" rows={3} value={formData.address} onChange={handleChange} required></textarea>
-                </div>
-                <div className="row mb-3">
-                  <div className="col-md-6">
-                    <label htmlFor="date" className="form-label">Randevu Tarihi</label>
-                    <input 
-                      type="date" 
-                      className="form-control" 
-                      id="date" 
-                      value={formData.date} 
-                      onChange={handleChange} 
-                      min={new Date().toISOString().split('T')[0]}
-                      required 
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label htmlFor="time" className="form-label">Randevu Saati</label>
-                    <select className="form-select" id="time" value={formData.time} onChange={handleChange} required>
-                      <option value="">Seçiniz...</option>
-                      {timeSlots.map(time => {
-                        const slotCount = availableSlots[time] || 0;
-                        const isAvailable = slotCount < 2;
-                        return (
-                          <option 
-                            key={time} 
-                            value={time}
-                            disabled={!isAvailable}
-                          >
-                            {time} {!isAvailable ? '(Dolu)' : ''}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <button type="submit" className="btn btn-primary btn-lg" disabled={loading}>
-                    {loading ? 'Gönderiliyor...' : 'Randevu Oluştur'}
-                  </button>
-                </div>
-              </form>
-            </div>
+              </div>
+
+              <div className="flex justify-center pt-6">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {loading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Gönderiliyor...
+                    </span>
+                  ) : (
+                    'Randevu Oluştur'
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -200,19 +277,16 @@ function BookAppointmentForm() {
   );
 }
 
-// Yeni bir loading komponenti
 function LoadingState() {
   return (
-    <div className="container my-5">
-      <div className="row justify-content-center">
-        <div className="col-md-8">
-          <div className="card">
-            <div className="card-body text-center">
-              <h2 className="card-title mb-4">Yükleniyor...</h2>
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Yükleniyor...</span>
-              </div>
-            </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div className="flex flex-col items-center justify-center">
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+              Yükleniyor...
+            </h2>
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
           </div>
         </div>
       </div>

@@ -18,8 +18,8 @@ export async function POST(request) {
     const body = await request.json();
     const { serviceType, description, date, time, phone, address } = body;
 
-    if (!serviceType || !description || !date || !time || !phone || !address) {
-      return NextResponse.json({ error: 'Tüm alanlar zorunludur.' }, { status: 400 });
+    if (!serviceType || !date || !time || !phone || !address) {
+      return NextResponse.json({ error: 'Servis tipi, tarih, saat, telefon ve adres alanları zorunludur.' }, { status: 400 });
     }
 
     // Aynı tarih ve saatteki randevu sayısını kontrol et
@@ -43,7 +43,7 @@ export async function POST(request) {
       data: {
         userId: session.user.id,
         serviceType,
-        description,
+        description: description || '', // Boşsa boş string olarak kaydet
         date: new Date(date),
         time,
         phone,

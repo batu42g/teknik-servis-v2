@@ -8,6 +8,9 @@ import { useSession, signOut } from 'next-auth/react';
 export default function Navbar() {
   const [cartCount, setCartCount] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const router = useRouter();
   const { data: session, status } = useSession();
 
@@ -24,12 +27,17 @@ export default function Navbar() {
       }
     };
 
-    // İlk yüklemede ve storage değişimlerinde çalışacak
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
     handleStorageChange();
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('scroll', handleScroll);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
@@ -48,12 +56,11 @@ export default function Navbar() {
     }
   };
 
-  // Sayfa yüklenene kadar basit navbar göster
   if (!isMounted) {
     return (
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
-        <div className="container">
-          <Link href="/" className="navbar-brand">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/50 backdrop-blur-lg border-b border-gray-200/10">
+        <div className="container mx-auto px-4">
+          <Link href="/" className="text-xl font-semibold py-4 block text-gray-900">
             Efe Bilgisayar ve Güvenlik Sistemleri
           </Link>
         </div>
@@ -62,111 +69,123 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light">
-      <div className="container">
-        <Link href="/" className="navbar-brand">
-          Efe Bilgisayar ve Güvenlik Sistemleri
-        </Link>
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav me-auto">
-            <li className="nav-item">
-              <Link href="/products" className="nav-link">
-                Ürünler
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+      isScrolled 
+        ? 'bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-200/20' 
+        : 'bg-white/40 backdrop-blur-lg border-b border-gray-200/10'
+    }`}>
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center py-4">
+          <Link href="/" className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-all duration-200">
+            Efe Bilgisayar ve Güvenlik Sistemleri
+          </Link>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100/80 backdrop-blur-sm transition-all duration-150 ease-out hover:scale-110 will-change-transform"
+          >
+            <svg className={`h-6 w-6 text-gray-700 transition-transform duration-200 ease-out ${isMenuOpen ? 'rotate-90' : 'rotate-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+            </svg>
+          </button>
+
+          {/* Desktop Navigation */}
+          <div className={`${isMenuOpen ? 'block' : 'hidden'} md:block absolute md:relative top-full md:top-auto left-0 md:left-auto w-full md:w-auto mt-0 md:mt-0 ${isMenuOpen ? 'bg-white/50 backdrop-blur-xl border-b border-gray-200/20 shadow-lg' : ''} md:bg-transparent md:backdrop-blur-0 md:border-0 md:shadow-none`}>
+            <div className="flex flex-col md:flex-row md:items-center md:space-x-2 p-4 md:p-0">
+              <Link href="/products" className="group px-4 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 backdrop-blur-sm transition-all duration-150 ease-out relative overflow-hidden">
+                <span className="relative z-10">Ürünler</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 scale-x-0 group-hover:scale-x-100 transition-transform duration-150 origin-left ease-out"></div>
               </Link>
-            </li>
-            <li className="nav-item">
-              <Link href="/book-appointment" className="nav-link">
-                Randevu Al
+              <Link href="/book-appointment" className="group px-4 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 backdrop-blur-sm transition-all duration-150 ease-out relative overflow-hidden">
+                <span className="relative z-10">Randevu Al</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 scale-x-0 group-hover:scale-x-100 transition-transform duration-150 origin-left ease-out"></div>
               </Link>
-            </li>
-            <li className="nav-item">
-              <Link href="/contact" className="nav-link">
-                İletişim
+              <Link href="/contact" className="group px-4 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 backdrop-blur-sm transition-all duration-150 ease-out relative overflow-hidden">
+                <span className="relative z-10">İletişim</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 scale-x-0 group-hover:scale-x-100 transition-transform duration-150 origin-left ease-out"></div>
               </Link>
-            </li>
-            <li className="nav-item">
-              <Link href="/about" className="nav-link">
-                Hakkımızda
+              <Link href="/about" className="group px-4 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 backdrop-blur-sm transition-all duration-150 ease-out relative overflow-hidden">
+                <span className="relative z-10">Hakkımızda</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 scale-x-0 group-hover:scale-x-100 transition-transform duration-150 origin-left ease-out"></div>
               </Link>
-            </li>
-          </ul>
-          <ul className="navbar-nav">
-            {status === 'authenticated' && session?.user ? (
-              <li className="nav-item dropdown">
-                <a
-                  className="nav-link dropdown-toggle d-flex align-items-center"
-                  href="#"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <i className="bi bi-person-circle me-1"></i>
-                  {session.user.name}
-                </a>
-                <ul className="dropdown-menu dropdown-menu-end">
-                  {session.user.role === 'admin' && (
-                    <li>
-                      <Link className="dropdown-item" href="/admin">
-                        <i className="bi bi-speedometer2 me-2"></i>
-                        Admin Paneli
+
+              {status === 'authenticated' && session?.user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    className="flex items-center px-4 py-2 rounded-lg text-gray-700 backdrop-blur-sm transition-all duration-150 ease-out will-change-transform"
+                  >
+                    <div className="h-8 w-8 mr-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white text-sm font-medium transition-transform duration-150 ease-out">
+                      {session.user.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="transition-all duration-150 ease-out">{session.user.name}</span>
+                    <svg className={`h-4 w-4 ml-1 transition-all duration-200 ease-out ${isProfileOpen ? 'rotate-180' : 'rotate-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {isProfileOpen && (
+                    <div className="absolute right-0 mt-2 w-64 rounded-xl bg-white/95 backdrop-blur-xl shadow-xl border border-gray-200/50 py-2 transform transition-all duration-200 ease-out origin-top-right will-change-transform">
+                      {session.user.role === 'admin' && (
+                        <Link href="/admin" className="flex items-center px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50/80 transition-all duration-150 ease-out rounded-lg mx-1">
+                          <svg className="h-5 w-5 mr-3 text-blue-500 transition-transform duration-150 ease-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span className="transition-all duration-150 ease-out">Admin Paneli</span>
+                        </Link>
+                      )}
+                      <Link href="/messages" className="flex items-center px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50/80 transition-all duration-150 ease-out rounded-lg mx-1">
+                        <svg className="h-5 w-5 mr-3 text-green-500 transition-all duration-150 ease-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <span className="transition-all duration-150 ease-out">Mesajlarım</span>
                       </Link>
-                    </li>
+                      <Link href="/profile" className="flex items-center px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50/80 transition-all duration-150 ease-out rounded-lg mx-1">
+                        <svg className="h-5 w-5 mr-3 text-indigo-500 transition-all duration-150 ease-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span className="transition-all duration-150 ease-out">Profilim</span>
+                      </Link>
+                      <hr className="my-2 border-gray-200/50" />
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full px-4 py-3 text-red-600 hover:text-red-700 hover:bg-red-50/80 transition-all duration-150 ease-out rounded-lg mx-1"
+                      >
+                        <svg className="h-5 w-5 mr-3 transition-all duration-150 ease-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        <span className="transition-all duration-150 ease-out">Çıkış Yap</span>
+                      </button>
+                    </div>
                   )}
-                  <li>
-                    <Link className="dropdown-item" href="/messages">
-                      <i className="bi bi-envelope me-2"></i>
-                      Mesajlarım
-                    </Link>
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" href="/profile">
-                      <i className="bi bi-person me-2"></i>
-                      Profilim
-                    </Link>
-                  </li>
-                  <li><hr className="dropdown-divider" /></li>
-                  <li>
-                    <button onClick={handleLogout} className="dropdown-item text-danger">
-                      <i className="bi bi-box-arrow-right me-2"></i>
-                      Çıkış Yap
-                    </button>
-                  </li>
-                </ul>
-              </li>
-            ) : (
-              <>
-                <li className="nav-item">
-                  <Link href="/login" className="nav-link">
-                    <i className="bi bi-box-arrow-in-right me-1"></i>
-                    Giriş Yap
+                </div>
+              ) : (
+                <>
+                  <Link href="/login" className="group px-4 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 backdrop-blur-sm transition-all duration-150 ease-out relative overflow-hidden">
+                    <span className="relative z-10">Giriş Yap</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 scale-x-0 group-hover:scale-x-100 transition-transform duration-150 origin-left ease-out"></div>
                   </Link>
-                </li>
-                <li className="nav-item">
-                  <Link href="/register" className="nav-link">
-                    <i className="bi bi-person-plus me-1"></i>
+                  <Link href="/register" className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-transform duration-150 shadow-lg hover:shadow-xl ease-out">
                     Kayıt Ol
                   </Link>
-                </li>
-              </>
-            )}
-            <li className="nav-item">
-              <Link href="/cart" className="nav-link">
-                <i className="bi bi-cart me-1"></i>
-                Sepet ({cartCount})
+                </>
+              )}
+
+              <Link href="/cart" className="group flex items-center px-4 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50/50 backdrop-blur-sm transition-all duration-150 ease-out relative">
+                <svg className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform duration-150 ease-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span className="group-hover:translate-x-1 transition-transform duration-150 ease-out">Sepet</span>
+                {cartCount > 0 && (
+                  <span className="ml-2 px-2 py-1 text-xs bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full animate-pulse group-hover:scale-110 transition-transform duration-150 ease-out">
+                    {cartCount}
+                  </span>
+                )}
               </Link>
-            </li>
-          </ul>
+            </div>
+          </div>
         </div>
       </div>
     </nav>

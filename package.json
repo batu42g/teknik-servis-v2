@@ -16,23 +16,25 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@popperjs/core": "^2.11.8",
-    "@prisma/client": "^6.9.0",
-    "bcryptjs": "^3.0.2",
-    "bootstrap": "^5.3.2",
-    "bootstrap-icons": "^1.13.1",
+    "@headlessui/react": "^2.2.4",
+    "@prisma/client": "^5.12.1",
+    "bcryptjs": "^2.4.3",
     "cookies-next": "^4.1.1",
-    "jose": "^6.0.11",
+    "jose": "^5.2.4",
     "jsonwebtoken": "^9.0.2",
-    "next": "^14.0.4",
-    "next-auth": "^4.24.11",
-    "prisma": "^6.9.0",
+    "lucide-react": "^0.525.0",
+    "next": "14.2.3",
+    "next-auth": "^4.24.7",
+    "prisma": "^5.12.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/node": "24.0.0",
-    "@types/react": "19.1.7",
-    "typescript": "5.8.3"
+    "@types/node": "20.12.7",
+    "@types/react": "18.2.79",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "5.4.5"
   }
 }

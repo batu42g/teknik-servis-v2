@@ -9,8 +9,31 @@ export async function PUT(request, { params }) {
     const updatedAppointment = await prisma.appointment.update({
       where: { id },
       data: { status },
+      include: {
+        user: {
+          select: { 
+            name: true,
+            email: true 
+          },
+        },
+      },
     });
-    return NextResponse.json(updatedAppointment);
+
+    // Price bilgisini de ekle
+    const serviceProduct = await prisma.product.findFirst({
+      where: {
+        name: updatedAppointment.serviceType,
+        category: 'servis',
+      },
+      select: { price: true },
+    });
+
+    const appointmentWithPrice = {
+      ...updatedAppointment,
+      price: serviceProduct?.price || 0,
+    };
+
+    return NextResponse.json(appointmentWithPrice);
   } catch (error) {
     return NextResponse.json({ error: 'İşlem başarısız' }, { status: 500 });
   }

@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { ShoppingCart, Plus, Minus, Trash2, CreditCard, Package, ShoppingBag, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export default function CartPage() {
   const [cart, setCart] = useState([]);
@@ -108,105 +110,224 @@ export default function CartPage() {
     }
   };
 
+  // Güvenli fiyat formatı
+  const formatPrice = (price) => {
+    if (!price) return '0.00';
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    return isNaN(numPrice) ? '0.00' : numPrice.toFixed(2);
+  };
+
   const totalPrice = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+
+  // Message Alert Component
+  const MessageAlert = ({ message }) => {
+    if (!message.text) return null;
+
+    const alertConfig = {
+      warning: { 
+        bg: 'bg-yellow-50', 
+        border: 'border-yellow-200', 
+        text: 'text-yellow-800', 
+        icon: AlertTriangle 
+      },
+      danger: { 
+        bg: 'bg-red-50', 
+        border: 'border-red-200', 
+        text: 'text-red-800', 
+        icon: AlertTriangle 
+      },
+      success: { 
+        bg: 'bg-green-50', 
+        border: 'border-green-200', 
+        text: 'text-green-800', 
+        icon: CheckCircle 
+      }
+    };
+
+    const config = alertConfig[message.type] || alertConfig.warning;
+    const Icon = config.icon;
+
+    return (
+      <div className={`${config.bg} ${config.border} border rounded-lg p-4 mb-6`}>
+        <div className="flex items-start">
+          <Icon className={`w-5 h-5 ${config.text} mr-3 mt-0.5`} />
+          <div className={config.text}>
+            {message.text.split('\n').map((line, i) => (
+              <div key={i}>{line}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   if (cart.length === 0) {
     return (
-      <div className="container my-5">
-        <div className="alert alert-info">
-          Sepetiniz boş. Alışverişe devam etmek için <a href="/products">ürünler sayfasına</a> göz atın.
+      <div className="max-w-4xl mx-auto px-4 py-16">
+        <div className="text-center bg-gray-50 rounded-lg p-12">
+          <ShoppingBag className="mx-auto h-24 w-24 text-gray-400 mb-6" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Sepetiniz Boş</h2>
+          <p className="text-gray-600 mb-8">
+            Henüz sepetinizde ürün bulunmamaktadır. Alışverişe başlamak için ürünlerimize göz atın.
+          </p>
+          <Link 
+            href="/products"
+            className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            <Package className="w-5 h-5 mr-2" />
+            Ürünleri İncele
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container my-5">
-      {message.text && (
-        <div className={`alert alert-${message.type}`}>
-          {message.text.split('\n').map((line, i) => (
-            <div key={i}>{line}</div>
-          ))}
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center">
+          <ShoppingCart className="w-8 h-8 mr-3 text-blue-600" />
+          <h1 className="text-3xl font-bold text-gray-800">Sepetim</h1>
+          <span className="ml-3 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            {cart.length} ürün
+          </span>
         </div>
-      )}
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title">Sepetim</h5>
-          <div className="table-responsive">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Ürün</th>
-                  <th>Fiyat</th>
-                  <th>Adet</th>
-                  <th>Toplam</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {cart.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.name}</td>
-                    <td>{item.price.toFixed(2)} TL</td>
-                    <td>
-                      <div className="input-group" style={{ width: '150px' }}>
-                        <button
-                          className="btn btn-outline-secondary"
-                          type="button"
-                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                        >
-                          -
-                        </button>
-                        <input
-                          type="number"
-                          className="form-control text-center"
-                          value={item.quantity}
-                          onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 0)}
+        <Link 
+          href="/products"
+          className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Alışverişe Devam Et
+        </Link>
+      </div>
+
+      <MessageAlert message={message} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Cart Items */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-semibold text-gray-800">Sepet Ürünleri</h2>
+            </div>
+            
+            <div className="divide-y divide-gray-200">
+              {cart.map((item) => (
+                <div key={item.id} className="p-6 hover:bg-gray-50 transition-colors">
+                  <div className="flex items-center space-x-4">
+                    {/* Product Image Placeholder */}
+                    <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center">
+                      {item.imageUrl ? (
+                        <img 
+                          src={item.imageUrl} 
+                          alt={item.name}
+                          className="w-full h-full object-cover rounded-lg"
                         />
-                        <button
-                          className="btn btn-outline-secondary"
-                          type="button"
-                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                          disabled={stockInfo[item.id] !== undefined && item.quantity >= stockInfo[item.id]}
-                        >
-                          +
-                        </button>
-                      </div>
-                      {stockInfo[item.id] !== undefined && (
-                        <small className="text-muted d-block">
-                          Stokta: {stockInfo[item.id]} adet
-                        </small>
+                      ) : (
+                        <Package className="w-8 h-8 text-gray-400" />
                       )}
-                    </td>
-                    <td>{(item.price * item.quantity).toFixed(2)} TL</td>
-                    <td>
+                    </div>
+
+                    {/* Product Info */}
+                    <div className="flex-1">
+                      <h3 className="text-lg font-medium text-gray-900">{item.name}</h3>
+                      <p className="text-gray-600">{formatPrice(item.price)} ₺</p>
+                      {stockInfo[item.id] !== undefined && (
+                        <p className="text-sm text-gray-500 flex items-center mt-1">
+                          <CheckCircle className="w-4 h-4 mr-1 text-green-500" />
+                          Stokta: {stockInfo[item.id]} adet
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Quantity Controls */}
+                    <div className="flex items-center space-x-3">
                       <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={() => removeFromCart(item.id)}
+                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                        onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                        disabled={item.quantity <= 1}
                       >
-                        Kaldır
+                        <Minus className="w-4 h-4" />
                       </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan="3" className="text-end"><strong>Toplam:</strong></td>
-                  <td><strong>{totalPrice.toFixed(2)} TL</strong></td>
-                  <td></td>
-                </tr>
-              </tfoot>
-            </table>
+                      
+                      <span className="w-12 text-center font-medium">{item.quantity}</span>
+                      
+                      <button
+                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                        disabled={stockInfo[item.id] !== undefined && item.quantity >= stockInfo[item.id]}
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Item Total */}
+                    <div className="text-right">
+                      <div className="text-lg font-semibold text-gray-900">
+                        {formatPrice(item.price * item.quantity)} ₺
+                      </div>
+                    </div>
+
+                    {/* Remove Button */}
+                    <button
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      onClick={() => removeFromCart(item.id)}
+                      title="Sepetten Kaldır"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div className="text-end mt-3">
+        </div>
+
+        {/* Order Summary */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-lg shadow-lg p-6 sticky top-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-6">Sipariş Özeti</h2>
+            
+            <div className="space-y-4 mb-6">
+              <div className="flex justify-between text-gray-600">
+                <span>Ara Toplam ({cart.length} ürün)</span>
+                <span>{formatPrice(totalPrice)} ₺</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Kargo</span>
+                <span className="text-green-600 font-medium">Ücretsiz</span>
+              </div>
+              <hr className="border-gray-200" />
+              <div className="flex justify-between text-lg font-semibold text-gray-900">
+                <span>Toplam</span>
+                <span>{formatPrice(totalPrice)} ₺</span>
+              </div>
+            </div>
+
             <button
-              className="btn btn-primary btn-lg"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 px-6 rounded-lg font-medium flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleCompletePurchase}
               disabled={loading}
             >
-              {loading ? 'İşleniyor...' : 'Alışverişi Tamamla'}
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                  İşleniyor...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5 mr-3" />
+                  Alışverişi Tamamla
+                </>
+              )}
             </button>
+
+            {status !== 'authenticated' && (
+              <p className="text-sm text-gray-500 text-center mt-4">
+                Alışverişi tamamlamak için giriş yapmanız gerekiyor.
+              </p>
+            )}
           </div>
         </div>
       </div>

@@ -20,18 +20,18 @@ export async function POST(request) {
     const data = await request.json();
     const { name, description, price, imageUrl, category, stock } = data;
 
-    if (!name || !price === undefined || !category) {
+    if (!name || price === undefined || !category) {
       return NextResponse.json({ error: 'İsim, fiyat ve kategori zorunludur.' }, { status: 400 });
     }
 
     const product = await prisma.product.create({
       data: {
         name,
-        description,
+        description: description || '',
         price: parseFloat(price),
-        imageUrl,
+        imageUrl: imageUrl || '',
         category,
-        stock: parseInt(stock),
+        stock: parseInt(stock) || 0,
       },
     });
     return NextResponse.json(product, { status: 201 });

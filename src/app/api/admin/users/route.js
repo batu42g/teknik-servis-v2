@@ -15,10 +15,10 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const { email, password, name, role } = await request.json();
+    const { email, password, adSoyad, telefon, role } = await request.json();
 
-    if (!email || !password || !name) {
-      return NextResponse.json({ error: 'İsim, email ve şifre zorunludur.' }, { status: 400 });
+    if (!email || !password || !adSoyad) {
+      return NextResponse.json({ error: 'Ad Soyad, email ve şifre zorunludur.' }, { status: 400 });
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -30,9 +30,10 @@ export async function POST(request) {
 
     const newUser = await prisma.user.create({
       data: {
-        name: name,
-        adSoyad: name,
+        name: adSoyad, // 'name' alanını adSoyad ile doldur
+        adSoyad: adSoyad,
         email: email,
+        phone: telefon, // Hata 'telefon' -> 'phone' olarak düzeltildi
         password: hashedPassword,
         role: role || 'user',
       },
@@ -41,6 +42,7 @@ export async function POST(request) {
     const { password: _, ...userWithoutPassword } = newUser;
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Sunucu hatası' }, { status: 500 });
+    console.error('Kullanıcı oluşturulurken hata oluştu:', error);
+    return NextResponse.json({ error: 'Kullanıcı oluşturulurken bir sunucu hatası oluştu. Lütfen terminali kontrol edin.' }, { status: 500 });
   }
 }

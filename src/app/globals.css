@@ -1,44 +1,74 @@
-/* Sadece Bootstrap ikonlarını import ediyoruz */
-@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-rgb: 255, 255, 255;
-  --bs-primary: #0d6efd;
-  --bs-secondary: #6c757d;
-  --bs-success: #198754;
-  --bs-info: #0dcaf0;
-  --bs-warning: #ffc107;
-  --bs-danger: #dc3545;
-  --bs-light: #f8f9fa;
-  --bs-dark: #212529;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  padding-top: 80px;
+  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-variant-numeric: oldstyle-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-main {
-  flex: 1;
+/* Smooth scroll davranışı */
+html {
+  scroll-behavior: smooth;
 }
 
-.card-img-top {
-  height: 200px;
-  object-fit: cover;
+/* Inter font optimizations */
+@layer base {
+  * {
+    font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    letter-spacing: -0.025em;
+  }
+  
+  .font-display {
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    letter-spacing: -0.035em;
+  }
 }
 
-.hero-image {
-  max-height: 400px;
-  object-fit: cover;
-}
-
-/* Responsive düzenlemeler */
-@media (max-width: 768px) {
-  .card-img-top {
-    height: 150px;
+/* Smooth animation optimizations */
+@layer utilities {
+  .backdrop-blur-glass {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  
+  .glass-border {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Hardware acceleration for smooth animations */
+  .will-change-transform {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+  
+  /* Optimize hover transitions */
+  .smooth-hover {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+  
+  /* Prevent layout shifts during animations */
+  .hover-lift:hover {
+    transform: translateY(-8px) translateZ(0);
   }
 }

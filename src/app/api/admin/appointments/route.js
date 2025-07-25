@@ -10,7 +10,10 @@ export async function GET(request) {
       orderBy: { date: 'desc' },
       include: {
         user: {
-          select: { name: true },
+          select: { 
+            name: true,
+            email: true 
+          },
         },
       },
     });

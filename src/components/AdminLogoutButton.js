@@ -1,20 +1,16 @@
 'use client';
-import { useRouter } from 'next/navigation';
+
+import { signOut } from 'next-auth/react';
+import { LogOut } from 'lucide-react';
 
 export default function AdminLogoutButton() {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    localStorage.removeItem('user');
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/'); // Çıkış yapınca ana sayfaya yönlendir
-    router.refresh(); // Sunucu tarafındaki durumu yenile
-  };
-
   return (
-    <button className="nav-link text-white btn btn-link w-100 text-start" onClick={handleLogout}>
-      <i className="bi bi-box-arrow-right me-2"></i>
-      Çıkış Yap
+    <button
+      onClick={() => signOut({ callbackUrl: '/' })}
+      className="flex items-center w-full px-4 py-3 text-left text-red-400 hover:bg-red-900 hover:text-red-200 rounded-md transition-colors duration-200"
+    >
+      <LogOut className="w-5 h-5 mr-3" />
+      <span>Çıkış Yap</span>
     </button>
   );
 } 

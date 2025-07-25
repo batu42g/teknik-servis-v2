@@ -1,74 +1,141 @@
 # Teknik Servis Web Sitesi
 
-Bu proje, teknik servis randevu yönetimi ve ürün satışı için geliştirilmiş bir web uygulamasıdır. Next.js, Bootstrap ve Prisma teknolojileri kullanılarak oluşturulmuştur.
+Bu proje, teknik servis randevu yönetimi ve ürün satışı için geliştirilmiş modern bir web uygulamasıdır. Next.js 14, Tailwind CSS ve Prisma teknolojileri kullanılarak oluşturulmuştur.
 
-## Özellikler
+## ✨ Özellikler
 
-- 👤 Kullanıcı Yönetimi (Kayıt, Giriş, Profil)
-- 📅 Randevu Sistemi
-- 🛠 Teknik Servis Takibi
-- 🛍 Ürün Satışı
-- 👨‍💼 Admin Paneli
-- 📱 Responsive Tasarım
+### 👤 Kullanıcı Sistemi
+- Modern kayıt/giriş sayfaları (Glass Morphism tasarım)
+- Kullanıcı profil yönetimi
+- Real-time durum güncellemeleri
 
-## Teknolojiler
+### 📅 Randevu & Servis Yönetimi
+- Dinamik randevu sistemi
+- Teknik servis durumu takibi
+- Admin paneli ile randevu yönetimi
 
-- Next.js 13+
-- React
-- Bootstrap 5
-- Prisma (SQLite)
-- JWT Authentication
+### 🛍 E-Ticaret
+- Ürün katalogu ve detay sayfaları
+- Sepet sistemi ve sipariş yönetimi
+- Ürün rating ve değerlendirme sistemi
 
-## Kurulum
+### 🎨 Modern Tasarım
+- Responsive ve mobile-first tasarım
+- Interactive slider sistemi
+- Smooth animations ve hover efektleri
+- Glass morphism ve gradient backgrounds
 
-1. Projeyi klonlayın:
-   ```bash
-   git clone [repository-url]
-   cd [proje-klasörü]
-   ```
+### 👨‍💼 Admin Paneli
+- Kapsamlı yönetim paneli
+- Slider, servis ve ürün yönetimi
+- Kullanıcı ve sipariş takibi
+- Real-time istatistikler
 
-2. Bağımlılıkları yükleyin:
-   ```bash
-   npm install
-   ```
+## 🚀 Teknolojiler
 
-3. Veritabanını oluşturun:
-   ```bash
-   npx prisma generate
-   npx prisma db push
-   ```
+### Frontend
+- **Next.js 14** - React framework
+- **React 18** - UI library
+- **Tailwind CSS** - Utility-first CSS framework
+- **Lucide React** - Modern icon library
 
-4. Çevre değişkenlerini ayarlayın:
-   - `.env` dosyası oluşturun ve aşağıdaki değişkenleri ekleyin:
-     ```
-     DATABASE_URL="file:./dev.db"
-     JWT_SECRET="your-secret-key"
-     ```
+### Backend & Database
+- **Prisma ORM** - Database toolkit
+- **PostgreSQL** - Production database
+- **NextAuth.js** - Authentication system
 
-5. Geliştirme sunucusunu başlatın:
-   ```bash
-   npm run dev
-   ```
+### Development
+- **ESLint** - Code linting
+- **PostCSS** - CSS processing
 
-6. Admin kullanıcısı oluşturun:
-   - `http://localhost:3000/api/auth/create-admin` endpoint'ine POST isteği gönderin
-   - Varsayılan admin bilgileri:
-     - Email: admin@teknikservis.com
-     - Şifre: admin123
-   - **ÖNEMLİ**: Admin oluşturulduktan sonra güvenlik için `src/app/api/auth/create-admin` dosyasını silin
+## 📦 Kurulum
 
-## Kullanım
+### 1. Projeyi Klonlayın
+```bash
+git clone https://github.com/batu42g/teknik-servis-v2.git
+cd teknik-servis-v2
+```
 
-- Web sitesi: `http://localhost:3000`
-- Admin paneli: `http://localhost:3000/admin`
+### 2. Bağımlılıkları Yükleyin
+```bash
+npm install
+```
 
-## Güvenlik Notları
+### 3. Environment Variables
+`.env` dosyası oluşturun:
+```env
+DATABASE_URL="your-postgresql-connection-string"
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
+```
 
-1. Üretim ortamında güçlü bir JWT_SECRET kullanın
-2. Admin oluşturma endpoint'ini devre dışı bırakın
-3. Varsayılan admin şifresini değiştirin
-4. `.env` dosyasını asla GitHub'a pushlamayın
+### 4. Veritabanı Kurulumu
+```bash
+npx prisma generate
+npx prisma db push
+npx prisma db seed
+```
 
-## Lisans
+### 5. Development Server
+```bash
+npm run dev
+```
 
-Bu proje [MIT lisansı](LICENSE) altında lisanslanmıştır. 
+## 🌐 Kullanım
+
+- **Web sitesi:** `http://localhost:3000`
+- **Admin paneli:** `http://localhost:3000/admin`
+- **Varsayılan admin:** 
+  - Email: `admin@teknikservis.com`
+  - Şifre: `admin123`
+
+## 📱 Sayfalar
+
+### Kullanıcı Sayfaları
+- **Ana Sayfa** - Hero slider ve hizmet kartları
+- **Ürünler** - Ürün kataloğu ve detayları
+- **Randevu Al** - Servis randevu formu
+- **İletişim** - İletişim bilgileri ve form
+- **Profil** - Kullanıcı bilgileri ve siparişler
+
+### Admin Sayfaları
+- **Dashboard** - Genel istatistikler
+- **Slider Yönetimi** - Ana sayfa slider kontrolü
+- **Hizmet Yönetimi** - Dinamik hizmet kartları
+- **Ürün Yönetimi** - Ürün CRUD işlemleri
+- **Randevu Yönetimi** - Randevu durumu kontrolü
+- **Kullanıcı Yönetimi** - Kullanıcı administrasyonu
+
+## 🔐 Güvenlik
+
+- NextAuth.js ile güvenli authentication
+- JWT token tabanlı oturum yönetimi
+- Admin route protection
+- Input validation ve sanitization
+
+## 🎨 Tasarım Özellikleri
+
+- **Modern UI/UX** - Tailwind CSS ile responsive tasarım
+- **Glass Morphism** - Modern cam efekti tasarımlar
+- **Smooth Animations** - Kullanıcı deneyimi için akıcı geçişler
+- **Interactive Elements** - Hover efektleri ve micro-interactions
+- **Mobile-First** - Tüm cihazlarda optimize edilmiş deneyim
+
+## 📄 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır.
+
+## 🚨 Production Notes
+
+1. **Environment Variables'ı güncelleyin**
+2. **Database connection string'i production'a ayarlayın**
+3. **NEXTAUTH_SECRET'i güçlü bir değerle değiştirin**
+4. **Admin hesap bilgilerini değiştirin**
+
+## 🤝 Katkıda Bulunma
+
+1. Fork edin
+2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Commit edin (`git commit -m 'Add amazing feature'`)
+4. Push edin (`git push origin feature/amazing-feature`)
+5. Pull Request açın 
